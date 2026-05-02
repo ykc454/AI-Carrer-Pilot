@@ -1,5 +1,6 @@
 package com.example.aicareerpilot.ui.screen
 
+import android.R.attr.maxWidth
 import android.net.http.SslCertificate.restoreState
 import android.net.http.SslCertificate.saveState
 import androidx.compose.animation.animateColorAsState
@@ -38,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -51,6 +54,7 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object Profile : Screen("profile", Icons.Default.Person, "Profile")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: ResumeViewModel) {
     val navController = rememberNavController()
@@ -59,7 +63,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
 
     val screens = listOf(Screen.Home, Screen.History, Screen.Profile)
     val deviceType = getDeviceType()
-
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     // YOUR ROW IS BACK HERE
     Row(modifier = Modifier.fillMaxSize()) {
 
@@ -87,6 +91,39 @@ fun MainScreen(viewModel: ResumeViewModel) {
 
         // 2. MAIN CONTENT AREA (Scaffold)
         Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                LargeTopAppBar(
+
+                    title = {
+                        Column {
+                            Text(
+                                text = "AI Career Pilot",
+                                style = if (getDeviceType() == DeviceType.TABLET)
+                                    MaterialTheme.typography.displayMedium
+                                else
+                                    MaterialTheme.typography.displaySmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
+
+                            Spacer(Modifier.height(6.dp))
+
+                            Text(
+                                text = "Analyze your resume against any job description",
+                                Modifier.padding(bottom = 11.dp),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.7f)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = Color.Black,
+                        scrolledContainerColor = Color.Black
+                    ),
+                    scrollBehavior = scrollBehavior
+                )
+            },
             bottomBar = {
                 if (deviceType == DeviceType.PHONE) {
                     NavigationBar(

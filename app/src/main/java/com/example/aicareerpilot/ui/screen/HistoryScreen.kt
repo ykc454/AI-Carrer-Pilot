@@ -3,7 +3,9 @@ package com.example.aicareerpilot.ui.screen
 import android.R.attr.onClick
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -141,95 +144,137 @@ fun HistoryScreen(viewModel: ResumeViewModel) {
 fun HistoryCard(record: AnalysisRecord) {
 
     var isExpanded by remember { mutableStateOf(false) }
+    val colorScheme = MaterialTheme.colorScheme
+
+    val scoreColor = when (record.resumeScore) {
+        in 0..49 -> colorScheme.error
+        in 50..80 -> Color.Yellow
+        else -> Color.Green
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .then(
-                if (isExpanded)
-                    Modifier.heightIn(min = 500.dp, max = 500.dp) // expanded size
-                else
-                    Modifier.height(150.dp) // collapsed fixed size
-            ),
-        colors = CardDefaults.cardColors(containerColor = Color.Black),
+            .padding(vertical = 10.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorScheme.surface.copy(alpha = 0.9f)
+        ),
+        border = BorderStroke(
+            1.dp,
+            colorScheme.onSurface.copy(alpha = 0.08f)
+        ),
         onClick = { isExpanded = !isExpanded }
     ) {
 
-        Column(
+        Box(
             modifier = Modifier
-                .padding(16.dp)
-                .animateContentSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            colorScheme.surface.copy(alpha = 0.7f),
+                            colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                        )
+                    )
+                )
         ) {
 
-            // FILE NAME
-            Text(
-                text = record.fileName,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // SCORE (make it more prominent)
-            val scoreColor = when (record.resumeScore) {
-                in 0..49 -> MaterialTheme.colorScheme.error
-                in 50..80 -> Color(0xFFFFC107) // amber (better than pure yellow)
-                else -> Color(0xFF4CAF50) // green
-            }
-
-            Text(
-                text = "Score: ${record.resumeScore}%",
-                style = MaterialTheme.typography.bodyMedium,
-                color = scoreColor,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 🔥 COLLAPSED PREVIEW (very important)
-            if (!isExpanded) {
-                Text(
-                    text = record.aiFeedback ?: "No feedback available",
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.White.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            // 🔥 EXPANDED FULL CONTENT
-            if (isExpanded) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = record.aiFeedback ?: "No feedback available",
-                        color = Color.White.copy(alpha = 0.85f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .animateContentSize()
             ) {
-                Text(
-                    text = if (isExpanded) "Show less" else "Show more",
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.labelSmall
-                )
 
-                if (!isExpanded) {
+                // 🔹 HEADER
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Column(modifier = Modifier.weight(1f)) {
+
+                        Text(
+                            text = record.fileName,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(Modifier.height(2.dp))
+
+                        Text(
+                            text = "Resume Analysis",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    // 🔹 Score Badge
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                scoreColor.copy(alpha = 0.12f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                1.dp,
+                                scoreColor.copy(alpha = 0.3f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "${record.resumeScore}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = scoreColor,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(14.dp))
+
+
+                // 🔹 EXPANDED CONTENT
+                if (isExpanded) {
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        border = BorderStroke(
+                            1.dp,
+                            colorScheme.onSurface.copy(alpha = 0.05f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(14.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                text = record.aiFeedback ?: "No feedback available",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colorScheme.onSurface.copy(alpha = 0.85f),
+                                lineHeight = 22.sp
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                // 🔹 FOOTER
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
                     val formattedTime = remember(record.timestamp) {
                         java.text.SimpleDateFormat(
                             "dd MMM, hh:mm a",
@@ -239,8 +284,14 @@ fun HistoryCard(record: AnalysisRecord) {
 
                     Text(
                         text = formattedTime,
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+
+                    Text(
+                        text = if (isExpanded) "Show less" else "Show more",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorScheme.primary
                     )
                 }
             }

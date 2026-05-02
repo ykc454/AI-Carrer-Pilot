@@ -43,6 +43,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontVariation.weight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import com.example.aicareerpilot.util.DeviceType
+import com.example.aicareerpilot.util.getDeviceType
 import com.example.aicareerpilot.util.parseBulletPoints
 
 
@@ -67,7 +69,8 @@ fun HomeScreen(viewModel: ResumeViewModel) {
                 Brush.verticalGradient(
                     listOf( Color(0xFF000000),
                         Color(0xFF0A0A0A),
-                        Color(0xFF606060))
+                        Color(0xFF484747)
+                    )
                 )
         )
         .drawBehind {
@@ -77,9 +80,7 @@ fun HomeScreen(viewModel: ResumeViewModel) {
                         Color.Transparent )
                 ),
                 radius = size.width * 0.8f,
-                center = Offset(size.width * 0.3f,
-                    size.height * 0.2f
-                )
+                center = Offset(size.width * 0.3f, size.height * 0.05f)
             )
         }
     ) {
@@ -101,7 +102,7 @@ fun HomeScreen(viewModel: ResumeViewModel) {
                         .padding(end = 24.dp)
                 ) {
 
-                    TitleSection(isTablet)
+
 
                     Spacer(Modifier.height(24.dp))
 
@@ -126,39 +127,36 @@ fun HomeScreen(viewModel: ResumeViewModel) {
 
         } else {
             // 📱 PHONE UI (your original but fixed)
-            Column(
+
+            LazyColumn(
                 modifier = Modifier
-                    .verticalScroll(rememberScrollState())
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-
+                    .padding(horizontal = 20.dp),
+                contentPadding = PaddingValues(top = 20.dp, bottom = 80.dp)
             ) {
+                item { Spacer(modifier = Modifier.height(20.dp)) }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                item { JDCard(jd) { viewModel.updateJD(it) } }
 
-                TitleSection(isTablet)
+                item { Spacer(modifier = Modifier.height(20.dp)) }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                JDCard(jd) { viewModel.updateJD(it) }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                UploadButtonPremium(isLoading) {
-                    launcher.launch("application/pdf")
+                item {
+                    UploadButtonPremium(isLoading) {
+                        launcher.launch("application/pdf")
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                item { Spacer(modifier = Modifier.height(24.dp)) }
 
-                SectionHeader()
+                item { SectionHeader() }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                item { Spacer(modifier = Modifier.height(12.dp)) }
 
                 val latest = history.firstOrNull()
-                latest?.let { HistoryCard(it) }
-                    ?: Text("No recent activity", color = Color.Gray)
-
-
+                item {
+                    latest?.let { HomeCard(it) }
+                        ?: Text("No recent activity", color = Color.Gray)
+                }
             }
             val year = "2026"
             Text(
@@ -174,21 +172,201 @@ fun HomeScreen(viewModel: ResumeViewModel) {
     }
 }
 @Composable
-fun TitleSection(isTablet: Boolean) {
+fun TitleSection() {
     Text(
         text = "AI Career Pilot",
-        style = if (isTablet)
+        style = if (getDeviceType() == DeviceType.TABLET)
             MaterialTheme.typography.displayMedium
         else
             MaterialTheme.typography.displaySmall,
         fontWeight = FontWeight.ExtraBold,
         color = Color.White
     )
-
+        Spacer(Modifier.height(50.dp))
     Text(
         text = "Analyze your resume against any job description",
+        style = MaterialTheme.typography.bodySmall,
         color = Color.White.copy(alpha = 0.7f)
     )
+}
+@Composable
+fun HomeCard(record: AnalysisRecord) {
+
+    var isExpanded by remember { mutableStateOf(false) }
+    val colorScheme = MaterialTheme.colorScheme
+
+    val scoreColor = when (record.resumeScore) {
+        in 0..49 -> colorScheme.error
+        in 50..80 -> Color.Yellow
+        else -> Color.Green
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorScheme.surface.copy(alpha = 0.6f) // glass base
+        ),
+        border = BorderStroke(
+            1.dp,
+            colorScheme.onSurface.copy(alpha = 0.08f)
+        ),
+        onClick = { isExpanded = !isExpanded }
+    ) {
+
+        Box(
+            modifier = Modifier
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            colorScheme.surface.copy(alpha = 0.7f),
+                            colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        )
+                    )
+                )
+        ) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize()
+                    .padding(20.dp)
+            ) {
+
+                // 🔹 HEADER
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Column(modifier = Modifier.weight(1f)) {
+
+                        Text(
+                            text = record.fileName,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(Modifier.height(2.dp))
+
+                        Text(
+                            text = "Resume Analysis",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    // 🔹 Score badge (clean)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                scoreColor.copy(alpha = 0.12f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                1.dp,
+                                scoreColor.copy(alpha = 0.3f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "${record.resumeScore}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = scoreColor,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(14.dp))
+
+
+                // 🔹 EXPANDED CONTENT
+                if (isExpanded) {
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        border = BorderStroke(
+                            1.dp,
+                            colorScheme.onSurface.copy(alpha = 0.05f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(14.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                text = record.aiFeedback ?: "Analysis pending...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colorScheme.onSurface.copy(alpha = 0.85f),
+                                lineHeight = 22.sp
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    val date = remember(record.timestamp) {
+                        java.text.SimpleDateFormat(
+                            "dd MMM yyyy",
+                            java.util.Locale.getDefault()
+                        ).format(java.util.Date(record.timestamp))
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = date,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+
+                        Text(
+                            text = "Show less",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colorScheme.primary
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        val formattedTime = remember(record.timestamp) {
+                            java.text.SimpleDateFormat(
+                                "dd MMM, hh:mm a",
+                                java.util.Locale.getDefault()
+                            ).format(java.util.Date(record.timestamp))
+                        }
+
+                        Text(
+                            text = formattedTime,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                        Text(
+                            text = "Show more",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
