@@ -18,6 +18,7 @@ class ResumeRepository @Inject constructor(
 
         // 2. AI Analysis (Context Score)
         val prompt = """
+            Don't use any text formatting 
             You are an expert HR Recruiter. 
             JOB DESCRIPTION:
             $jobDescription
@@ -41,7 +42,7 @@ class ResumeRepository @Inject constructor(
 
             // 3. Combine Scores
             val aiScore = extractAiScore(aiFeedback)
-            val finalCombinedScore = (keywordScore + aiScore) / 2
+            val finalCombinedScore = aiScore
 
             // 4. Save to Room
             val record = AnalysisRecord(

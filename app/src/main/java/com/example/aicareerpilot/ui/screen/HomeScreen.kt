@@ -29,10 +29,20 @@ import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontVariation.weight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import com.example.aicareerpilot.util.parseBulletPoints
 
 
@@ -43,180 +53,218 @@ fun HomeScreen(viewModel: ResumeViewModel) {
     val isLoading by viewModel.isLoading.collectAsState()
     val history by viewModel.analysisHistory.collectAsState()
     val jd by viewModel.jobDescription.collectAsState()
-    var selectedRecord by remember { mutableStateOf<AnalysisRecord?>(null) }
-    var showSheet by remember { mutableStateOf(false) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { viewModel.processResume(it, "Resume_${System.currentTimeMillis()}.pdf") }
     }
 
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF000000),
+    BoxWithConstraints( modifier = Modifier
+        .fillMaxSize()
+        .background(
+            brush =
+                Brush.verticalGradient(
+                    listOf( Color(0xFF000000),
                         Color(0xFF0A0A0A),
-                        Color(0xFF868686)
-                    )
+                        Color(0xFF606060))
+                )
+        )
+        .drawBehind {
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf( Color.White.copy(alpha = 0.08f),
+                        Color.Transparent )
+                ),
+                radius = size.width * 0.8f,
+                center = Offset(size.width * 0.3f,
+                    size.height * 0.2f
                 )
             )
-            .drawBehind {
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.08f),
-                            Color.Transparent
-                        )
-                    ),
-                    radius = size.width * 0.8f,
-                    center = Offset(size.width * 0.3f, size.height * 0.2f)
-                )
-            }
+        }
     ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp)
-        ) {
+        val isTablet = maxWidth > 600.dp
 
-            Spacer(modifier = Modifier.height(60.dp))
-
-
-            Text(
-                text = "AI Career Pilot",
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-1).sp
-                ),
-                color = Color.White
-            )
-
-            Text(
-                text = "Analyze your resume against any job description",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.7f)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            //  INPUT CARD
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1A1A1A).copy(alpha = 0.7f)
-                ),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-                elevation = CardDefaults.cardElevation(8.dp),
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = jd,
-                    onValueChange = { viewModel.updateJD(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
-                        .padding(8.dp),
-                    placeholder = {
-                        Text("Paste Job Description...", color = Color.LightGray)
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF121212),
-                        unfocusedContainerColor = Color(0xFF121212),
-                        cursorColor = Color.White,
-                        focusedBorderColor = Color.White.copy(alpha = 0.2f),
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-
-            Box(
+        if (isTablet) {
+            // 🔥 TABLET UI
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .shadow(
-                        elevation = 12.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        ambientColor = Color.White.copy(alpha = 0.3f)
-                    )
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            listOf(Color.White, Color(0xFFE0E0E0))
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    .border(
-                        1.dp,
-                        Color.White.copy(alpha = 0.4f),
-                        RoundedCornerShape(16.dp)
-                    )
-                    .clickable(
-                        enabled = !isLoading
-                    ) {
-                        launcher.launch("application/pdf")
-                    },
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(32.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.Black
-                    )
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.FileUpload, contentDescription = null, tint = Color.Black)
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Analyze Match Score",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
+
+                // LEFT SIDE
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 24.dp)
+                ) {
+
+                    TitleSection(isTablet)
+
+                    Spacer(Modifier.height(24.dp))
+
+                    JDCard(jd) { viewModel.updateJD(it) }
+                }
+
+                // RIGHT SIDE
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()).weight(1f)
+                ) {
+
+                    UploadButtonPremium(isLoading) {
+                        launcher.launch("application/pdf")
                     }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    val latest = history.firstOrNull()
+                    latest?.let { HistoryCard(it) }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+        } else {
+            // 📱 PHONE UI (your original but fixed)
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
+
+            ) {
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                TitleSection(isTablet)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                JDCard(jd) { viewModel.updateJD(it) }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                UploadButtonPremium(isLoading) {
+                    launcher.launch("application/pdf")
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                SectionHeader()
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val latest = history.firstOrNull()
+                latest?.let { HistoryCard(it) }
+                    ?: Text("No recent activity", color = Color.Gray)
 
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.History, contentDescription = null, tint = Color.White)
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Recent Activity",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = Color.White
-                )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            val latestRecord = history.firstOrNull()
-
-            if (latestRecord != null) {
-                HistoryCard(latestRecord)
-            } else {
-                Text(
-                    text = "No recent activity",
-                    color = Color.White.copy(alpha = 0.5f),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-
+            val year = "2026"
+            Text(
+                text = "© $year Yash Chaudhari — All rights reserved",
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 10.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
         }
+    }
+}
+@Composable
+fun TitleSection(isTablet: Boolean) {
+    Text(
+        text = "AI Career Pilot",
+        style = if (isTablet)
+            MaterialTheme.typography.displayMedium
+        else
+            MaterialTheme.typography.displaySmall,
+        fontWeight = FontWeight.ExtraBold,
+        color = Color.White
+    )
+
+    Text(
+        text = "Analyze your resume against any job description",
+        color = Color.White.copy(alpha = 0.7f)
+    )
+}
+
+@Composable
+fun JDCard(jd: String, onChange: (String) -> Unit) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1A1A1A).copy(alpha = 0.7f)
+        ),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = jd,
+            onValueChange = onChange,
+            maxLines = 5,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp, max = 200.dp)
+                .padding(8.dp),
+            shape = RoundedCornerShape(20.dp),
+            placeholder = {
+                Text("Paste Job Description...", color = Color.LightGray)
+            },
+            // This sets the icon on the keyboard
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            // This defines the behavior when the "Done" icon is clicked
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                    // You can also add logic here to trigger the "Match Score" calculation
+                }
+            )
+        )
+    }
+}
+
+@Composable
+fun UploadButtonPremium(isLoading: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color.White, Color(0xFFE0E0E0))
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(color = Color.Black)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.FileUpload, null, tint = Color.Black)
+                Spacer(Modifier.width(8.dp))
+                Text("Analyze Match Score", color = Color.Black)
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionHeader() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Default.History, null, tint = Color.White)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "Recent Activity",
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White
+        )
     }
 }
 
