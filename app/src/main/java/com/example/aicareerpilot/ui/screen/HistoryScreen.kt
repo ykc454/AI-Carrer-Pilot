@@ -1,8 +1,5 @@
 package com.example.aicareerpilot.ui.screen
 
-import android.R.attr.onClick
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,52 +11,40 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.aicareerpilot.data.model.AnalysisRecord
 import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
-import com.example.aicareerpilot.util.parseBulletPoints
 
 @Composable
-fun HistoryScreen(viewModel: ResumeViewModel) {
-
+fun HistoryScreen(
+    viewModel: ResumeViewModel,
+    onRecordClick: (AnalysisRecord) -> Unit // Added callback for navigation
+) {
     val history by viewModel.analysisHistory.collectAsState()
     val deviceType = getDeviceType()
     val isTablet = deviceType == DeviceType.TABLET
@@ -71,6 +56,7 @@ fun HistoryScreen(viewModel: ResumeViewModel) {
             Color(0xFF505050)
         )
     )
+
     if (history.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -82,9 +68,8 @@ fun HistoryScreen(viewModel: ResumeViewModel) {
                 style = MaterialTheme.typography.titleMedium
             )
         }
-    }else{
+    } else {
         if (isTablet) {
-            // 🔥 TABLET → GRID
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
@@ -93,13 +78,10 @@ fun HistoryScreen(viewModel: ResumeViewModel) {
                     .drawBehind {
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf( Color.White.copy(alpha = 0.08f),
-                                    Color.Transparent )
+                                colors = listOf(Color.White.copy(alpha = 0.08f), Color.Transparent)
                             ),
                             radius = size.width * 0.8f,
-                            center = Offset(size.width * 0.3f,
-                                size.height * 0.2f
-                            )
+                            center = Offset(size.width * 0.3f, size.height * 0.2f)
                         )
                     }
                     .padding(16.dp),
@@ -107,11 +89,10 @@ fun HistoryScreen(viewModel: ResumeViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(history) { record ->
-                    HistoryCard(record)
+                    HistoryCard(record = record, onClick = { onRecordClick(record) })
                 }
             }
         } else {
-            // 📱 PHONE → LIST
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -119,31 +100,28 @@ fun HistoryScreen(viewModel: ResumeViewModel) {
                     .drawBehind {
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf( Color.White.copy(alpha = 0.08f),
-                                    Color.Transparent )
+                                colors = listOf(Color.White.copy(alpha = 0.08f), Color.Transparent)
                             ),
                             radius = size.width * 0.8f,
-                            center = Offset(size.width * 0.3f,
-                                size.height * 0.2f
-                            )
+                            center = Offset(size.width * 0.3f, size.height * 0.2f)
                         )
                     }
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(history) { record ->
-                    HistoryCard(record)
+                    HistoryCard(record = record, onClick = { onRecordClick(record) })
                 }
             }
         }
     }
-
 }
 
 @Composable
-fun HistoryCard(record: AnalysisRecord) {
-
-    var isExpanded by remember { mutableStateOf(false) }
+fun HistoryCard(
+    record: AnalysisRecord,
+    onClick: () -> Unit // Replaced internal state with a click parameter
+) {
     val colorScheme = MaterialTheme.colorScheme
 
     val scoreColor = when (record.resumeScore) {
@@ -155,7 +133,7 @@ fun HistoryCard(record: AnalysisRecord) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
+            .padding(vertical = 4.dp), // Reduced padding slightly for clean list look
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorScheme.surface.copy(alpha = 0.9f)
@@ -164,9 +142,8 @@ fun HistoryCard(record: AnalysisRecord) {
             1.dp,
             colorScheme.onSurface.copy(alpha = 0.08f)
         ),
-        onClick = { isExpanded = !isExpanded }
+        onClick = onClick
     ) {
-
         Box(
             modifier = Modifier
                 .background(
@@ -178,22 +155,16 @@ fun HistoryCard(record: AnalysisRecord) {
                     )
                 )
         ) {
-
             Column(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .animateContentSize()
+                modifier = Modifier.padding(20.dp)
             ) {
-
                 // 🔹 HEADER
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     Column(modifier = Modifier.weight(1f)) {
-
                         Text(
                             text = record.fileName,
                             style = MaterialTheme.typography.titleMedium,
@@ -236,45 +207,12 @@ fun HistoryCard(record: AnalysisRecord) {
 
                 Spacer(Modifier.height(14.dp))
 
-
-                // 🔹 EXPANDED CONTENT
-                if (isExpanded) {
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 400.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        border = BorderStroke(
-                            1.dp,
-                            colorScheme.onSurface.copy(alpha = 0.05f)
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(14.dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            Text(
-                                text = record.aiFeedback ?: "No feedback available",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colorScheme.onSurface.copy(alpha = 0.85f),
-                                lineHeight = 22.sp
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-                }
-
                 // 🔹 FOOTER
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     val formattedTime = remember(record.timestamp) {
                         java.text.SimpleDateFormat(
                             "dd MMM, hh:mm a",
@@ -289,9 +227,10 @@ fun HistoryCard(record: AnalysisRecord) {
                     )
 
                     Text(
-                        text = if (isExpanded) "Show less" else "Show more",
+                        text = "View details", // Changed text to signal screen transition
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.primary
+                        color = colorScheme.primary,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }

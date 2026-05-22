@@ -6,70 +6,182 @@ import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+
 class ResumeRepository @Inject constructor(
     private val generativeModel: GenerativeModel,
     private val analysisDao: AnalysisDao
 ) {
-    suspend fun analyzeWithJD(fileName: String, resumeText: String, jobDescription: String): String {
-        // 1. Manual Keyword Matching (Logic Score)
-        val keywords = extractKeywords(jobDescription)
-        val foundKeywords = keywords.filter { resumeText.contains(it, ignoreCase = true) }
-        val keywordScore = if (keywords.isEmpty()) 0 else (foundKeywords.size * 100) / keywords.size
+    suspend fun analyzeWithJD(
+        fileName: String,
+        resumeText: String,
+        jobDescription: String
+    ): String {
 
-        // 2. AI Analysis (Context Score)
-        val prompt = """
-            Don't use any text formatting 
-            You are an expert HR Recruiter. 
-            JOB DESCRIPTION:
-            $jobDescription
-            
-            RESUME TEXT:
-            $resumeText
-            
-            Based on the Job Description above, please provide:
-            1. Match Summary: How well does the candidate fit?
-            2. Missing Keywords: What specific skills from the JD are missing in the resume?
-            3. Things to Avoid: Point out any red flags or unnecessary info in the resume.
-            4. Improvement Suggestions: How to better align this resume with THIS specific JD.
-            5. AI_MATCH_SCORE: Provide a score from 0-100 based on experience and context.
-            
-            IMPORTANT: End your response with: AI_MATCH_SCORE: [number]
-        """.trimIndent()
+        val targetKeywords = extractKeywords(jobDescription)
+
+        val matchedKeywords = targetKeywords.filter {
+            resumeText.contains(it, ignoreCase = true)
+        }
+
+        val keywordScore =
+            if (targetKeywords.isEmpty()) 0
+            else (matchedKeywords.size * 100) / targetKeywords.size
 
         return try {
+
+            // ================= AI CALL =================
+
+            val prompt = """
+            You are an expert HR Recruiter and ATS optimizer.
+
+            JOB DESCRIPTION:
+            $jobDescription
+
+            RESUME TEXT:
+            $resumeText
+
+            Give:(use only * or ** for font avoid # or ##)
+            1. Match Summary
+            -points
+            add line
+            2. Missing Keywords
+            -points
+            add line
+            3. Things to Avoid
+            -points
+            add line
+            4. Improvement Suggestions
+            -points
+            add line
+
+            At end:
+            AI_MATCH_SCORE: [0-100]
+        """.trimIndent()
+
             val response = generativeModel.generateContent(prompt)
-            val aiFeedback = response.text ?: "No analysis generated"
 
-            // 3. Combine Scores
-            val aiScore = extractAiScore(aiFeedback)
-            val finalCombinedScore = aiScore
+            val aiFeedback =
+                response.text ?: "AI returned empty response."
 
-            // 4. Save to Room
+            val parsedAiScore = extractAiScore(aiFeedback)
+
+            val finalCombinedScore =
+                if (parsedAiScore > 0) {
+                    ((parsedAiScore * 0.8) + (keywordScore * 0.2))
+                        .toInt()
+                        .coerceIn(0, 100)
+                } else {
+                    keywordScore
+                }
+
+            val summaryMetadata = buildString {
+                appendLine("##### Automated Keyword Evaluation")
+                appendLine(
+                    "**Matched Skills:** ${
+                        if (matchedKeywords.isEmpty()) "None"
+                        else matchedKeywords.joinToString(", ")
+                    }"
+                )
+                appendLine("**Keyword Match Density:** $keywordScore%")
+                appendLine()
+                appendLine(aiFeedback)
+            }
+
             val record = AnalysisRecord(
                 fileName = fileName,
                 rawText = resumeText,
-                aiFeedback = "Keyword Match: ${foundKeywords.joinToString()}\n\n$aiFeedback",
-                resumeScore = finalCombinedScore
+                aiFeedback = summaryMetadata,
+                resumeScore = finalCombinedScore,
+                timestamp = System.currentTimeMillis()
             )
+
             analysisDao.insertRecord(record)
 
             aiFeedback
+
         } catch (e: Exception) {
-            "Error: ${e.localizedMessage}"
+
+            //  OFFLINE FALLBACK reply
+
+            val offlineFeedback = buildString {
+
+                appendLine("*Offline Analysis Mode*")
+                appendLine("")
+
+                appendLine("**Internet connection unavailable.**")
+                appendLine("")
+
+                appendLine("***Keyword Evaluation:-***")
+                appendLine("")
+
+                appendLine(
+                    "**Matched Skills:** ${
+                        if (matchedKeywords.isEmpty()) "None"
+                        else matchedKeywords.joinToString(", ")
+                    }"
+                )
+
+                appendLine("**Keyword Match Density:** $keywordScore%")
+                appendLine()
+
+                appendLine("AI-powered semantic analysis could not be generated because network access is unavailable.")
+            }
+
+            val record = AnalysisRecord(
+                fileName = fileName,
+                rawText = resumeText,
+                aiFeedback = offlineFeedback,
+                resumeScore = keywordScore,
+                timestamp = System.currentTimeMillis()
+            )
+
+            analysisDao.insertRecord(record)
+
+            offlineFeedback
         }
     }
 
-    // Simple keyword extractor (picks words longer than 5 letters as "skills")
+    /**
+     * Resilient keyword scanner extracting core industry domain skills
+     */
     private fun extractKeywords(jd: String): List<String> {
-        return jd.split(" ", "\n", ",")
-            .map { it.trim().lowercase().replace(Regex("[^a-zA-Z]"), "") }
-            .filter { it.length > 5 } // Basic filter for technical words/skills
+        // Broad stop-words list to prevent structural noise from filtering as "skills"
+        val stopWords = setOf(
+            "about", "above", "across", "after", "against", "along", "around", "at",
+            "before", "behind", "below", "beneath", "beside", "between", "beyond",
+            "during", "except", "for", "from", "in", "inside", "into", "like",
+            "near", "of", "off", "on", "onto", "out", "outside", "over", "past",
+            "through", "throughout", "to", "toward", "under", "underneath", "until",
+            "up", "upon", "with", "within", "without", "should", "would", "could"
+        )
+
+        return jd.split(Regex("[\\s\n,./:!?()|+\\-]+")) // Cleaner token split including paths
+            .map { it.trim().lowercase() }
+            .filter { token ->
+                token.length >= 3 &&
+                        token.any { it.isLetter() } &&
+                        !stopWords.contains(token)
+            }
             .distinct()
     }
 
+    /**
+     * Resilient score parser utilizing case-insensitive boundaries and lazy digit lookups
+     */
     private fun extractAiScore(text: String): Int {
-        val regex = "AI_MATCH_SCORE:\\s*(\\d+)".toRegex()
-        return regex.find(text)?.groupValues?.get(1)?.toInt() ?: 0
+        val patterns = listOf(
+            "AI_MATCH_SCORE:\\s*(\\d+)".toRegex(RegexOption.IGNORE_CASE),
+            "MATCH_SCORE:\\s*(\\d+)".toRegex(RegexOption.IGNORE_CASE),
+            "SCORE:\\s*(\\d+)".toRegex(RegexOption.IGNORE_CASE)
+        )
+
+        for (regex in patterns) {
+            val match = regex.find(text)
+            if (match != null) {
+                return match.groupValues[1].toIntOrNull()?.coerceIn(0, 100) ?: 0
+            }
+        }
+        return 0 // Fallback condition handler identifier
     }
 
     fun getHistory(): Flow<List<AnalysisRecord>> {

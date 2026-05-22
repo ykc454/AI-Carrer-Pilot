@@ -83,4 +83,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
 
     implementation("androidx.compose.material:material-icons-extended:1.7.0")
+    //to convert mark text into readable text
+    implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.33.0")
+    //for splash screen
+    implementation("androidx.core:core-splashscreen:1.2.0")
 }

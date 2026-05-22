@@ -31,11 +31,3 @@ class PdfHelper(private val context: Context) {
     }
 }
 
-
-fun parseBulletPoints(text: String): List<String> {
-    return text
-        .replace(Regex("\\*\\*(.*?)\\*\\*"), "$1") // remove **bold**
-        .split("\n")
-        .map { it.replace(Regex("^\\*+\\s*"), "").trim() } // remove *, ** at start
-        .filter { it.isNotEmpty() }
-}

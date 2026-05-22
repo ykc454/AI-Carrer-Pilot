@@ -4,14 +4,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
@@ -23,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.aicareerpilot.data.model.AnalysisRecord
 import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
 import androidx.compose.foundation.BorderStroke
@@ -34,23 +30,21 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontVariation.weight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
-import com.example.aicareerpilot.util.parseBulletPoints
+import com.mikepenz.markdown.m3.Markdown
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: ResumeViewModel) {
+fun HomeScreen(
+    viewModel: ResumeViewModel,
+    onRecordClick: (AnalysisRecord) -> Unit
+) {
 
     val isLoading by viewModel.isLoading.collectAsState()
     val history by viewModel.analysisHistory.collectAsState()
@@ -121,7 +115,14 @@ fun HomeScreen(viewModel: ResumeViewModel) {
                     Spacer(Modifier.height(24.dp))
 
                     val latest = history.firstOrNull()
-                    latest?.let { HistoryCard(it) }
+                    latest?.let { record ->
+                        HistoryCard(
+                            record = record,
+                            onClick = {
+                                onRecordClick(record)
+                            }
+                        )
+                    }
                 }
             }
 
@@ -152,10 +153,23 @@ fun HomeScreen(viewModel: ResumeViewModel) {
 
                 item { Spacer(modifier = Modifier.height(12.dp)) }
 
-                val latest = history.firstOrNull()
                 item {
-                    latest?.let { HomeCard(it) }
-                        ?: Text("No recent activity", color = Color.Gray)
+
+                    val latest = history.firstOrNull()
+
+                    latest?.let { record ->
+
+                        HistoryCard(
+                            record = record,
+                            onClick = {
+                                onRecordClick(record)
+                            }
+                        )
+
+                    } ?: Text(
+                        text = "No recent activity",
+                        color = Color.Gray
+                    )
                 }
             }
             val year = "2026"
@@ -306,11 +320,8 @@ fun HomeCard(record: AnalysisRecord) {
                                 .padding(14.dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            Text(
-                                text = record.aiFeedback ?: "Analysis pending...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colorScheme.onSurface.copy(alpha = 0.85f),
-                                lineHeight = 22.sp
+                            Markdown(
+                                content = record.aiFeedback ?: "No feedback available"
                             )
                         }
                     }

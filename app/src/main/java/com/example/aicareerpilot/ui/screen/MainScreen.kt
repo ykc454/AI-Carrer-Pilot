@@ -1,38 +1,27 @@
 package com.example.aicareerpilot.ui.screen
 
-import android.R.attr.maxWidth
-import android.net.http.SslCertificate.restoreState
-import android.net.http.SslCertificate.saveState
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +41,16 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object Home : Screen("home", Icons.Default.Home, "Home")
     object History : Screen("history", Icons.Default.History, "History")
     object Profile : Screen("profile", Icons.Default.Person, "Profile")
+
+    object HistoryDetail : Screen(
+        route = "history_detail/{recordId}",
+        icon = Icons.Default.Description,
+        label = "Detail"
+    ) {
+        fun createRoute(recordId: Int): String {
+            return "history_detail/$recordId"
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,17 +134,6 @@ fun MainScreen(viewModel: ResumeViewModel) {
                         screens.forEach { screen ->
                             val isSelected = currentRoute == screen.route
 
-                            // 1. "Blink" Animation: Soft pulse when active
-                            val infiniteTransition = rememberInfiniteTransition(label = "blink")
-                            val alpha by infiniteTransition.animateFloat(
-                                initialValue = 0.5f,
-                                targetValue = 1f,
-                                animationSpec = infiniteRepeatable(
-                                    animation = tween(1000, easing = LinearEasing),
-                                    repeatMode = RepeatMode.Reverse
-                                ),
-                                label = "glowAlpha"
-                            )
 
                             // 2. Scale Animation: The icon grows slightly
                             val scale by animateFloatAsState(
@@ -157,11 +145,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
                             NavigationBarItem(
                                 selected = isSelected,
                                 onClick = {
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    handleNavigation(navController, screen.route)
                                 },
                                 icon = {
                                     Column(
@@ -206,18 +190,57 @@ fun MainScreen(viewModel: ResumeViewModel) {
                 startDestination = Screen.Home.route,
                 modifier = Modifier.padding(padding)
             ) {
-                composable(Screen.Home.route) { HomeScreen(viewModel) }
-                composable(Screen.History.route) { HistoryScreen(viewModel) }
+                composable(Screen.Home.route) {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        onRecordClick = { record ->
+                            navController.navigate(
+                                Screen.HistoryDetail.createRoute(record.id)
+                            ) {
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+                composable(Screen.History.route) { HistoryScreen(
+                    viewModel,
+                    onRecordClick = { record ->
+                        navController.navigate(
+                            Screen.HistoryDetail.createRoute(record.id)
+                        ) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+                }
+
                 composable(Screen.Profile.route) { /* ProfileScreen() */ }
+
+                composable("history_detail/{recordId}") { backStackEntry ->
+                    val recordId = backStackEntry.arguments?.getString("recordId")?.toIntOrNull()
+
+                    // Fast path: Just pass the ID. The NavHost layout stays completely lightweight.
+                    HistoryDetailScreen(
+                        recordId = recordId,
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
 }
 
 // Clean helper for navigation logic
-private fun handleNavigation(navController: NavHostController, route: String) {
+private fun handleNavigation(
+    navController: NavHostController,
+    route: String
+) {
+
     navController.navigate(route) {
-        popUpTo(navController.graph.startDestinationId) { saveState = true }
+
+        // Remove detail screens
+        popUpTo(navController.graph.startDestinationId)
+
         launchSingleTop = true
         restoreState = true
     }
