@@ -187,4 +187,10 @@ class ResumeRepository @Inject constructor(
     fun getHistory(): Flow<List<AnalysisRecord>> {
         return analysisDao.getAllRecords()
     }
+
+     suspend fun deleteRecord(record : AnalysisRecord){
+        analysisDao.deleteRecord(record)
+    }
+
+
 }

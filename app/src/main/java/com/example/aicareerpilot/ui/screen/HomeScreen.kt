@@ -120,7 +120,8 @@ fun HomeScreen(
                             record = record,
                             onClick = {
                                 onRecordClick(record)
-                            }
+                            },
+                            viewModel = viewModel
                         )
                     }
                 }
@@ -163,7 +164,8 @@ fun HomeScreen(
                             record = record,
                             onClick = {
                                 onRecordClick(record)
-                            }
+                            },
+                            viewModel = viewModel
                         )
 
                     } ?: Text(

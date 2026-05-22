@@ -53,4 +53,9 @@ class ResumeViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
+    fun deleteRecord(record: AnalysisRecord) {
+        viewModelScope.launch {
+            repository.deleteRecord(record)
+        }
+    }
 }

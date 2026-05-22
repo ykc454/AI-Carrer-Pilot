@@ -12,14 +12,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -89,7 +95,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(history) { record ->
-                    HistoryCard(record = record, onClick = { onRecordClick(record) })
+                    HistoryCard(record = record, onClick = { onRecordClick(record) }, viewModel = viewModel)
                 }
             }
         } else {
@@ -110,7 +116,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(history) { record ->
-                    HistoryCard(record = record, onClick = { onRecordClick(record) })
+                    HistoryCard(record = record, onClick = { onRecordClick(record) }, viewModel = viewModel)
                 }
             }
         }
@@ -119,6 +125,7 @@ fun HistoryScreen(
 
 @Composable
 fun HistoryCard(
+    viewModel: ResumeViewModel,
     record: AnalysisRecord,
     onClick: () -> Unit // Replaced internal state with a click parameter
 ) {
@@ -156,7 +163,7 @@ fun HistoryCard(
                 )
         ) {
             Column(
-                modifier = Modifier.padding(20.dp)
+                modifier = Modifier.padding(10.dp)
             ) {
                 // 🔹 HEADER
                 Row(
@@ -210,9 +217,9 @@ fun HistoryCard(
                 // 🔹 FOOTER
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     val formattedTime = remember(record.timestamp) {
                         java.text.SimpleDateFormat(
                             "dd MMM, hh:mm a",
@@ -226,8 +233,22 @@ fun HistoryCard(
                         color = colorScheme.onSurface.copy(alpha = 0.5f)
                     )
 
+                    IconButton(
+                        onClick = { viewModel.deleteRecord(record) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
                     Text(
-                        text = "View details", // Changed text to signal screen transition
+                        text = "View details",
                         style = MaterialTheme.typography.labelSmall,
                         color = colorScheme.primary,
                         fontWeight = FontWeight.Medium
