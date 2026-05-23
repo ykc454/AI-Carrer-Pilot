@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,10 +29,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -41,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aicareerpilot.data.model.AnalysisRecord
 import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
@@ -130,7 +135,7 @@ fun HistoryCard(
     onClick: () -> Unit // Replaced internal state with a click parameter
 ) {
     val colorScheme = MaterialTheme.colorScheme
-
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val scoreColor = when (record.resumeScore) {
         in 0..49 -> colorScheme.error
         in 50..80 -> Color.Yellow
@@ -156,11 +161,12 @@ fun HistoryCard(
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            colorScheme.surface.copy(alpha = 0.7f),
-                            colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                            colorScheme.surface.copy(alpha = 1f),
+                            colorScheme.surfaceVariant.copy(alpha = 0.01f)
                         )
                     )
                 )
+                .padding(10.dp)
         ) {
             Column(
                 modifier = Modifier.padding(10.dp)
@@ -234,7 +240,9 @@ fun HistoryCard(
                     )
 
                     IconButton(
-                        onClick = { viewModel.deleteRecord(record) },
+                        onClick = {
+                            showDeleteDialog = true
+                        },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
@@ -257,4 +265,56 @@ fun HistoryCard(
             }
         }
     }
+    if (showDeleteDialog) {
+        DeleteDialog(
+            onConfirm = {
+                viewModel.deleteRecord(record)
+                showDeleteDialog = false
+            },
+            onDismiss = {
+                showDeleteDialog = false
+            }
+        )
+    }
+}
+@Composable
+fun DeleteDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+
+        title = {
+            Text("Delete Record")
+        },
+
+        text = {
+            Text("Are you sure you want to delete this analysis record?")
+        },
+
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm
+            ) {
+                Text(
+                    "Yes",
+                    color = Color.Red
+                )
+            }
+        },
+
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Cancel")
+            }
+        },
+
+        containerColor = Color(0xFF1E1E1E),
+        titleContentColor = Color.White,
+        textContentColor = Color.LightGray
+    )
 }
