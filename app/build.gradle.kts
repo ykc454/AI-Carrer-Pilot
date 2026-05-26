@@ -93,7 +93,8 @@ dependencies {
     ksp(libs.room.compiler)
 
     // Gemini AI
-    implementation(libs.google.ai.client)
+//    implementation(libs.google.ai.client)
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
     // PDF
     implementation(libs.pdfbox.android)

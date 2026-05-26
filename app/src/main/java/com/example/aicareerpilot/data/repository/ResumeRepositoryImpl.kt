@@ -102,30 +102,56 @@ class ResumeRepositoryImpl @Inject constructor(
 
         } catch (e: Exception) {
 
-            //  OFFLINE FALLBACK reply
+            val errorMessage = when {
+
+                e.message?.contains("Unable to resolve host", true) == true ->
+                    "No internet connection available."
+
+                e.message?.contains("timeout", true) == true ->
+                    "Request timed out. Please try again."
+
+                e.message?.contains("503", true) == true ->
+                    "AI service is temporarily unavailable."
+
+                e.message?.contains("429", true) == true ->
+                    "Too many requests. Please wait a moment."
+
+                e.message?.contains("API key", true) == true ->
+                    "Invalid API configuration."
+
+                else ->
+                    "AI analysis failed. Please try again."
+            }
 
             val offlineFeedback = buildString {
 
-                appendLine("*Offline Analysis Mode*")
-                appendLine("")
+                appendLine("SYSTEM_STATUS:")
+                appendLine("- $errorMessage")
+                appendLine()
 
-                appendLine("**Internet connection unavailable.**")
-                appendLine("")
-
-                appendLine("***Keyword Evaluation:-***")
-                appendLine("")
-
+                appendLine("MATCH_SUMMARY:")
                 appendLine(
-                    "**Matched Skills:** ${
+                    "- Matched Skills: ${
                         if (matchedKeywords.isEmpty()) "None"
                         else matchedKeywords.joinToString(", ")
                     }"
                 )
-
-                appendLine("**Keyword Match Density:** $keywordScore%")
+                appendLine("- Keyword Match Density: $keywordScore%")
                 appendLine()
 
-                appendLine("AI-powered semantic analysis could not be generated because network access is unavailable.")
+                appendLine("MISSING_KEYWORDS:")
+                appendLine("- AI analysis unavailable")
+                appendLine()
+
+                appendLine("THINGS_TO_AVOID:")
+                appendLine("- Could not generate AI suggestions")
+                appendLine()
+
+                appendLine("IMPROVEMENT_SUGGESTIONS:")
+                appendLine("- Retry once network/service stabilizes")
+                appendLine()
+
+                appendLine("AI_MATCH_SCORE: $keywordScore")
             }
 
             val record = AnalysisRecord(

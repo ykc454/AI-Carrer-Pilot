@@ -153,7 +153,7 @@ fun HistoryCard(
             .padding(vertical = 4.dp), // Reduced padding slightly for clean list look
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface.copy(alpha = 0.9f)
+            containerColor = Color.Black
         ),
         border = BorderStroke(
             1.dp,

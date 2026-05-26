@@ -199,7 +199,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
         ) { padding ->
             NavHost(
                 navController = navController,
-                startDestination = Screen.Home.route,
+                startDestination = startDestination,
                 modifier = Modifier.padding(padding)
             ) {
                 composable(Screen.Home.route) {

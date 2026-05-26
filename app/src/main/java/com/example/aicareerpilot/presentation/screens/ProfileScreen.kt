@@ -1,20 +1,11 @@
 package com.example.aicareerpilot.presentation.screens
 
-import androidx.compose.foundation.layout.width
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,22 +15,25 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -48,135 +42,142 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import com.google.firebase.auth.FirebaseAuth
+
+private val BackgroundColor = Color(0xFF000000)
+private val CardColor = Color(0xFF000000)
+private val BorderColor = Color(0xFFFFFFFF)
+private val PrimaryWhite = Color(0xFFF5F5F5)
+private val SecondaryText = Color(0xFF9E9E9E)
 
 @Composable
 fun ProfileScreen(navController: NavHostController) {
+
     val context = LocalContext.current
     val authViewModel: AuthViewModel = hiltViewModel()
+
     var showLogoutDialog by remember {
         mutableStateOf(false)
     }
 
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    val userName = currentUser?.displayName ?: "Guest User"
+    val userEmail = currentUser?.email ?: "No Email"
+
+    val initials = userName
+        .split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .take(2)
+        .joinToString("")
+        .uppercase()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Black,
-                        Color(0xFF111111),
-                        Color(0xFF1C1C1C)
-                    )
-                )
-            )
+            .background(BackgroundColor)
             .verticalScroll(rememberScrollState())
-            .padding(20.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
 
-        // Header Section
+        // =========================
+        // HEADER CARD
+        // =========================
+
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1A1A1A)
+            shape = RoundedCornerShape(28.dp),
+            border = BorderStroke(
+                width = 1.dp,
+                color = BorderColor
             ),
-            shape = RoundedCornerShape(24.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = CardColor
+            )
         ) {
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(vertical = 30.dp, horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                // Avatar
+
                 Box(
                     modifier = Modifier
-                        .size(90.dp)
+                        .size(92.dp)
                         .clip(CircleShape)
                         .background(Color.White),
                     contentAlignment = Alignment.Center
                 ) {
 
                     Text(
-                        text = "YC",
-                        style = MaterialTheme.typography.headlineMedium,
+                        text = initials,
                         color = Color.Black,
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.ExtraBold
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
-                    text = "Yash Chaudhari",
+                    text = userName,
+                    color = PrimaryWhite,
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Android Developer",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.LightGray
+                    text = userEmail,
+                    color = SecondaryText,
+                    style = MaterialTheme.typography.bodyLarge
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(100.dp),
+                    color = Color.White.copy(alpha = 0.06f)
+                ) {
+
+                    Text(
+                        text = "AI Career Pilot User",
+                        modifier = Modifier.padding(
+                            horizontal = 18.dp,
+                            vertical = 10.dp
+                        ),
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "AI Career Pilot helps users analyze resumes against job descriptions using AI-powered ATS scoring and career insights.",
+                    text = "Premium AI-powered resume analysis and ATS optimization platform.",
+                    color = SecondaryText,
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Features Section
-        ProfileSectionTitle(title = "App Features")
+        // =========================
+        // ACTIONS
+        // =========================
 
-        Spacer(modifier = Modifier.height(12.dp))
+        ProfileSectionTitle(title = "Settings")
 
-        FeatureItem(
-            icon = Icons.Default.Work,
-            title = "Resume Analysis",
-            subtitle = "Analyze resume against job descriptions"
-        )
-
-        FeatureItem(
-            icon = Icons.Default.Star,
-            title = "ATS Match Score",
-            subtitle = "Get professional ATS compatibility score"
-        )
-
-        FeatureItem(
-            icon = Icons.Default.Description,
-            title = "Resume Feedback",
-            subtitle = "Strengths and improvement suggestions"
-        )
-
-        FeatureItem(
-            icon = Icons.Default.Code,
-            title = "AI Powered",
-            subtitle = "Smart AI analysis using modern AI models"
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Actions Section
-        ProfileSectionTitle(title = "More")
-
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         ActionItem(
             icon = Icons.Default.PrivacyTip,
@@ -185,7 +186,7 @@ fun ProfileScreen(navController: NavHostController) {
 
             val intent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("https://your-privacy-policy-link.com")
+                Uri.parse("https://ykc454.github.io/ai-career-pilot-privacy/")
             )
 
             context.startActivity(intent)
@@ -195,6 +196,12 @@ fun ProfileScreen(navController: NavHostController) {
             icon = Icons.Default.Info,
             title = "About App"
         ) {
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://ykc454.github.io/ai_career_pilot_about_app/")
+            )
+
+            context.startActivity(intent)
 
         }
 
@@ -204,8 +211,13 @@ fun ProfileScreen(navController: NavHostController) {
         ) {
 
             val intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:yourmail@gmail.com")
-                putExtra(Intent.EXTRA_SUBJECT, "AI Career Pilot Feedback")
+
+                data = Uri.parse("mailto:crazyfintak@gmail.com")
+
+                putExtra(
+                    Intent.EXTRA_SUBJECT,
+                    "AI Career Pilot Feedback"
+                )
             }
 
             context.startActivity(intent)
@@ -217,7 +229,9 @@ fun ProfileScreen(navController: NavHostController) {
         ) {
 
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
+
                 type = "text/plain"
+
                 putExtra(
                     Intent.EXTRA_TEXT,
                     "Check out AI Career Pilot app!"
@@ -231,37 +245,48 @@ fun ProfileScreen(navController: NavHostController) {
                 )
             )
         }
+
         ActionItem(
             icon = Icons.Default.Logout,
-            title = "Logout"
+            title = "Logout",
+            isLogout = true
         ) {
+
             showLogoutDialog = true
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Divider(color = Color.DarkGray)
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = BorderColor
+        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "Version 1.0.0",
-            color = Color.Gray,
+            color = SecondaryText,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Text(
             text = "© 2026 Yash Chaudhari",
-            color = Color.Gray,
+            color = SecondaryText,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
     }
+
+    // =========================
+    // LOGOUT DIALOG
+    // =========================
+
     if (showLogoutDialog) {
 
         AlertDialog(
@@ -270,13 +295,14 @@ fun ProfileScreen(navController: NavHostController) {
                 showLogoutDialog = false
             },
 
-            containerColor = Color(0xFF1A1A1A),
+            containerColor = CardColor,
 
             title = {
 
                 Text(
                     text = "Logout",
-                    color = Color.White
+                    color = PrimaryWhite,
+                    fontWeight = FontWeight.Bold
                 )
             },
 
@@ -284,7 +310,7 @@ fun ProfileScreen(navController: NavHostController) {
 
                 Text(
                     text = "Are you sure you want to logout?",
-                    color = Color.LightGray
+                    color = SecondaryText
                 )
             },
 
@@ -311,7 +337,8 @@ fun ProfileScreen(navController: NavHostController) {
 
                     Text(
                         text = "Logout",
-                        color = Color.Red
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             },
@@ -327,7 +354,7 @@ fun ProfileScreen(navController: NavHostController) {
 
                     Text(
                         text = "Cancel",
-                        color = Color.White
+                        color = SecondaryText
                     )
                 }
             }
@@ -342,8 +369,8 @@ fun ProfileSectionTitle(
 
     Text(
         text = title,
+        color = PrimaryWhite,
         style = MaterialTheme.typography.titleLarge,
-        color = Color.White,
         fontWeight = FontWeight.Bold
     )
 }
@@ -358,11 +385,11 @@ fun FeatureItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp),
+            .padding(bottom = 14.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E1E)
-        ),
-        shape = RoundedCornerShape(18.dp)
+            containerColor = CardColor
+        )
     ) {
 
         Row(
@@ -374,24 +401,24 @@ fun FeatureItem(
 
             Surface(
                 shape = CircleShape,
-                color = Color.White.copy(alpha = 0.12f)
+                color = Color.White.copy(alpha = 0.06f)
             ) {
 
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(14.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             Column {
 
                 Text(
                     text = title,
-                    color = Color.White,
+                    color = PrimaryWhite,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -400,7 +427,7 @@ fun FeatureItem(
 
                 Text(
                     text = subtitle,
-                    color = Color.Gray,
+                    color = SecondaryText,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -412,51 +439,44 @@ fun FeatureItem(
 fun ActionItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
+    isLogout: Boolean = false,
     onClick: () -> Unit
 ) {
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp)
+            .padding(bottom = 14.dp)
             .clickable {
                 onClick()
             },
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E1E)
-        ),
-        shape = RoundedCornerShape(18.dp)
+            containerColor = CardColor
+        )
     ) {
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 18.dp, vertical = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isLogout) Color.White else Color.White
+            )
 
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color.White
-                )
+            Spacer(modifier = Modifier.width(16.dp))
 
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Text(
-                    text = title,
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+            Text(
+                text = title,
+                color = if (isLogout) Color.White else PrimaryWhite,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
-
-
-
