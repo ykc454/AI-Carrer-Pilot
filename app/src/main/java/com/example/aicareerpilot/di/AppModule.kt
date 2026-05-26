@@ -44,7 +44,7 @@ abstract class AppModule {
         @Singleton
         fun provideGenerativeModel(): GenerativeModel {
             return GenerativeModel(
-                modelName = "gemini-3.5-flash",
+                modelName = "gemini-2.5-flash",
                 apiKey = BuildConfig.API_KEY
             )
         }

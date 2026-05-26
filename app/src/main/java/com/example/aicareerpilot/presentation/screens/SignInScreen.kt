@@ -1,5 +1,8 @@
 package com.example.aicareerpilot.presentation.screens
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -31,6 +34,7 @@ import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
 import kotlin.math.PI
 import kotlin.math.sin
 
+@SuppressLint("ContextCastToActivity")
 @Composable
 fun SignInScreen(
     navController: NavHostController
@@ -38,9 +42,25 @@ fun SignInScreen(
     val authViewModel: AuthViewModel = hiltViewModel()
     val context = LocalContext.current
     val uiState by authViewModel.uiState.collectAsState()
+    val isLoading = uiState is AuthUiState.Loading
 
     // 1. Core Animation Setup
     val infiniteTransition = rememberInfiniteTransition(label = "SignInAnimations")
+    val activity = LocalContext.current as Activity
+
+    DisposableEffect(Unit) {
+
+        // Lock portrait while SignInScreen is visible
+        activity.requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        onDispose {
+
+            // Restore normal rotation after leaving screen
+            activity.requestedOrientation =
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
 
     // Smooth scanning loop (2.5 seconds per loop)
     val scanOffset by infiniteTransition.animateFloat(
@@ -214,7 +234,13 @@ fun SignInScreen(
 
             // Action Button
             OutlinedButton(
-                onClick = { authViewModel.signInWithGoogle(context) },
+                onClick = {
+                    if (!isLoading) {
+                        authViewModel.signInWithGoogle(context)
+                    }
+                },
+
+                enabled = !isLoading,
 
                 modifier = Modifier
                     .fillMaxWidth()
@@ -224,30 +250,63 @@ fun SignInScreen(
                 shape = RoundedCornerShape(16.dp),
 
                 colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Black
+                    containerColor = if (isLoading)
+                        Color(0xFF111111)
+                    else
+                        Color.Black,
+
+                    disabledContainerColor = Color(0xFF111111),
+                    disabledContentColor = Color.White
                 ),
 
                 border = BorderStroke(
                     1.dp,
-                    Color.White.copy(alpha = 0.5f)
+                    if (isLoading)
+                        Color(0xFFFFFFFF)
+                    else
+                        Color.White.copy(alpha = 0.5f)
                 )
             ) {
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.google_logo_new),
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Continue with Google",
-                        fontSize = 16.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
-                    )
+
+                    if (isLoading) {
+
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = Color(0xFFFFFFFF)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = "Signing in...",
+                            fontSize = 16.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                    } else {
+
+                        Image(
+                            painter = painterResource(R.drawable.google_logo_new),
+                            contentDescription = null,
+                            modifier = Modifier.size(22.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = "Continue with Google",
+                            fontSize = 16.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }

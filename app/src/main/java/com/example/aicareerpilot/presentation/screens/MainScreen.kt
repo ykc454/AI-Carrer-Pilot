@@ -76,7 +76,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
     Row(modifier = Modifier.fillMaxSize()) {
 
         // 1. TABLET SIDE: Navigation Rail
-        if (deviceType == DeviceType.TABLET) {
+        if (showBars && deviceType == DeviceType.TABLET) {
             NavigationRail(
                 containerColor = Color.Black,
                 header = { /* Optional: Add logo here */ }
@@ -199,7 +199,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
         ) { padding ->
             NavHost(
                 navController = navController,
-                startDestination = startDestination,
+                startDestination = Screen.Home.route,
                 modifier = Modifier.padding(padding)
             ) {
                 composable(Screen.Home.route) {

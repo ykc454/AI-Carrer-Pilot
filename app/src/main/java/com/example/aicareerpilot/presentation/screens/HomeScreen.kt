@@ -1,17 +1,35 @@
 package com.example.aicareerpilot.presentation.screens
 
+import android.R.attr.scaleX
+import android.R.attr.scaleY
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,16 +42,28 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.aicareerpilot.domain.model.AnalysisRecord
 import com.example.aicareerpilot.presentation.viewmodel.ResumeUiState
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
@@ -191,35 +221,6 @@ fun HomeScreen(
 
             }
         }
-
-        // 3. Optional: Block UI interactions with a clean overlay during heavy background analysis
-        AnimatedVisibility(
-            visible = isLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable(enabled = false) {}, // absorbs clicks
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator(color = Color.White)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Analyzing Resume...", color = Color.White, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
     }
     if (showHelpDialog) {
         helpDialog(
@@ -306,29 +307,152 @@ fun JDCard(jd: String, onChange: (String) -> Unit) {
 }
 
 @Composable
-fun UploadButtonPremium(isLoading: Boolean, onClick: () -> Unit) {
+fun UploadButtonPremium(
+    isLoading: Boolean,
+    onClick: () -> Unit
+) {
+
+    val infiniteTransition = rememberInfiniteTransition(label = "premium_border")
+
+    // Smooth rotating border animation
+    val degrees by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 4000,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
+
+    // Google-inspired gradient colors
+    val googleGradient = listOf(
+        Color(0xFF4285F4),
+        Color(0xFFEA4335),
+        Color(0xFFFBBC05),
+        Color(0xFF34A853),
+        Color(0xFF4285F4)
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color.White, Color(0xFFE0E0E0))
-                ),
-                shape = RoundedCornerShape(16.dp)
+            .height(58.dp)
+
+            // Animated border ONLY during loading
+            .then(
+                if (isLoading) {
+
+                    Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .drawBehind {
+                            rotate(
+                                degrees = degrees,
+                                pivot = center
+                            ) {
+                                drawCircle(
+                                    brush = Brush.sweepGradient(
+                                        colors = googleGradient,
+                                        center = center
+                                    ),
+                                    radius = size.maxDimension
+                                )
+                            }
+                        }
+                        .padding(2.dp)
+
+                } else {
+
+                    Modifier
+                        .border(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(18.dp)
+                        )
+                }
             )
-            .clickable(enabled = !isLoading) { onClick() }, // Prevent spam clicks while loading
+
+            .clip(RoundedCornerShape(18.dp))
+
+            // Always white background
+            .background( Color.Black)
+
+            .clickable(
+                enabled = !isLoading
+            ) {
+                onClick()
+            },
+
         contentAlignment = Alignment.Center
     ) {
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.FileUpload, null, tint = Color.Black)
-                Spacer(Modifier.width(8.dp))
-                Text("Analyze Match Score", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
+        AnimatedContent(
+            targetState = isLoading,
 
+            transitionSpec = {
+                fadeIn(
+                    animationSpec = tween(220)
+                ) togetherWith fadeOut(
+                    animationSpec = tween(180)
+                )
+            },
+
+            label = "button_content"
+        ) { loading ->
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                if (loading) {
+
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text(
+                        text = "AI is analyzing...",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            letterSpacing = 0.3.sp
+                        )
+                    )
+
+                } else {
+
+                    Icon(
+                        imageVector = Icons.Default.FileUpload,
+                        contentDescription = "Upload",
+                        tint = Color.White
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text(
+                        text = "Analyze Match Score",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            letterSpacing = 0.3.sp
+                        )
+                    )
+                }
+            }
+        }
     }
 }
+
 
 @Composable
 fun SectionHeader(

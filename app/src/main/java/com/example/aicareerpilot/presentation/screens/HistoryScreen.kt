@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -37,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -44,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.aicareerpilot.domain.model.AnalysisRecord
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
@@ -65,7 +69,7 @@ fun HistoryScreen(
         listOf(
             Color(0xFF000000),
             Color(0xFF000000),
-            Color(0xFF0C0C0C)
+            Color(0xFF111111)
         )
     )
 
@@ -138,9 +142,9 @@ fun HistoryCard(
     val colorScheme = MaterialTheme.colorScheme
     var showDeleteDialog by remember { mutableStateOf(false) }
     val scoreColor = when (record.resumeScore) {
-        in 0..49 -> colorScheme.error
-        in 50..80 -> Color.Yellow
-        else -> Color.Green
+        in 0..49 -> Color(0xFFFF5A5F)
+        in 50..80 -> Color(0xFFFFB547)
+        else -> Color(0xFF32D583)
     }
 
     Card(
@@ -199,23 +203,35 @@ fun HistoryCard(
                     // 🔹 Score Badge
                     Box(
                         modifier = Modifier
-                            .background(
-                                scoreColor.copy(alpha = 0.12f),
-                                RoundedCornerShape(12.dp)
-                            )
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF111111))
                             .border(
-                                1.dp,
-                                scoreColor.copy(alpha = 0.3f),
-                                RoundedCornerShape(12.dp)
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.06f),
+                                shape = RoundedCornerShape(12.dp)
                             )
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
-                        Text(
-                            text = "${record.resumeScore}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = scoreColor,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Box(
+                                modifier = Modifier
+                                    .size(7.dp)
+                                    .clip(CircleShape)
+                                    .background(scoreColor)
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = "${record.resumeScore}%",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
 
