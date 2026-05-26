@@ -3,16 +3,14 @@ package com.example.aicareerpilot
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
-import com.example.aicareerpilot.ui.theme.AICareerPilotTheme
+import com.example.aicareerpilot.presentation.theme.AICareerPilotTheme
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import android.graphics.Color
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.aicareerpilot.ui.screen.HomeScreen
-import com.example.aicareerpilot.ui.screen.MainScreen
-import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
+import com.example.aicareerpilot.presentation.screens.MainScreen
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

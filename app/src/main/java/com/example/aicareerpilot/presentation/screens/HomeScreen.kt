@@ -1,11 +1,10 @@
-package com.example.aicareerpilot.ui.screen
+package com.example.aicareerpilot.presentation.screens
 
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -35,10 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.aicareerpilot.data.model.AnalysisRecord
-import com.example.aicareerpilot.ui.viewmodel.ResumeUiState
-import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
-import androidx.compose.material.icons.filled.Help
+import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.presentation.viewmodel.ResumeUiState
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

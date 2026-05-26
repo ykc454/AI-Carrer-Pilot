@@ -1,6 +1,7 @@
 package com.example.aicareerpilot.presentation.viewmodel
 
 import android.content.Context
+import android.util.Log
 
 import com.example.aicareerpilot.R
 import androidx.credentials.CredentialManager
@@ -29,6 +30,8 @@ sealed interface AuthUiState {
         val message: String
     ) : AuthUiState
 }
+private const val TAG = "GoogleLogin"
+
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
@@ -40,15 +43,21 @@ class AuthViewModel @Inject constructor(
     val uiState: StateFlow<AuthUiState> =
         _uiState.asStateFlow()
 
-    fun signInWithGoogle(
-        context: Context
-    ) {
+    private val _isLoggedIn =
+        MutableStateFlow(authRepository.isUserLoggedIn())
+
+    val isLoggedIn: StateFlow<Boolean> =
+        _isLoggedIn.asStateFlow()
+
+    fun signInWithGoogle(context: Context) {
 
         if (_uiState.value is AuthUiState.Loading) return
 
         viewModelScope.launch {
 
             try {
+
+                Log.d(TAG, "Starting Google Sign In")
 
                 _uiState.value = AuthUiState.Loading
 
@@ -58,20 +67,27 @@ class AuthViewModel @Inject constructor(
                 val googleIdOption =
                     GetGoogleIdOption.Builder()
                         .setFilterByAuthorizedAccounts(false)
+                        .setAutoSelectEnabled(false)
                         .setServerClientId(
                             context.getString(R.string.default_web_client_id)
                         )
                         .build()
+
+                Log.d(TAG, "GoogleIdOption created")
 
                 val request =
                     GetCredentialRequest.Builder()
                         .addCredentialOption(googleIdOption)
                         .build()
 
+                Log.d(TAG, "Request built")
+
                 val result = credentialManager.getCredential(
                     request = request,
                     context = context
                 )
+
+                Log.d(TAG, "Credential received")
 
                 val credential = result.credential
 
@@ -81,6 +97,8 @@ class AuthViewModel @Inject constructor(
                     GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
                 ) {
 
+                    Log.d(TAG, "Google credential type matched")
+
                     val googleCredential =
                         GoogleIdTokenCredential.createFrom(
                             credential.data
@@ -88,26 +106,42 @@ class AuthViewModel @Inject constructor(
 
                     val idToken = googleCredential.idToken
 
+                    Log.d(TAG, "ID Token received")
+
                     val repoResult =
                         authRepository.googleLogin(idToken)
 
-                    repoResult
-                        .onSuccess {
+                    repoResult.onSuccess {
 
-                            _uiState.value =
-                                AuthUiState.Success
-                        }
+                        Log.d(TAG, "Firebase login success")
 
-                        .onFailure {
+                        _uiState.value = AuthUiState.Success
+                        _isLoggedIn.value = true
+                    }
 
-                            _uiState.value =
-                                AuthUiState.Error(
-                                    it.message ?: "Login Failed"
-                                )
-                        }
+                    repoResult.onFailure {
+
+                        Log.e(TAG, "Firebase login failed: ${it.message}")
+
+                        _uiState.value =
+                            AuthUiState.Error(
+                                it.message ?: "Login Failed"
+                            )
+                    }
+
+                } else {
+
+                    Log.e(TAG, "Credential type mismatch")
+
+                    _uiState.value =
+                        AuthUiState.Error(
+                            "Invalid credential type"
+                        )
                 }
 
             } catch (e: Exception) {
+
+                Log.e(TAG, "Google Sign In Exception", e)
 
                 _uiState.value =
                     AuthUiState.Error(
@@ -118,15 +152,16 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun logout() {
+        authRepository.logout()
+        _isLoggedIn.value = false
+    }
+
     fun isLoggedIn(): Boolean {
         return authRepository.isUserLoggedIn()
     }
 
     fun resetState() {
         _uiState.value = AuthUiState.Idle
-    }
-
-    fun logout() {
-        authRepository.logout()
     }
 }

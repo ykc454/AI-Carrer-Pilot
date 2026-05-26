@@ -1,10 +1,13 @@
-package com.example.aicareerpilot.ui.viewmodel
+package com.example.aicareerpilot.presentation.viewmodel
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.aicareerpilot.data.model.AnalysisRecord
-import com.example.aicareerpilot.data.repository.ResumeRepository
+import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.data.repository.ResumeRepositoryImpl
+import com.example.aicareerpilot.domain.usecases.AnalyzeResumeUseCase
+import com.example.aicareerpilot.domain.usecases.DeleteRecordUseCase
+import com.example.aicareerpilot.domain.usecases.GetHistoryUseCase
 import com.example.aicareerpilot.util.PdfHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +26,9 @@ sealed interface ResumeUiState {
 }
 @HiltViewModel
 class ResumeViewModel @Inject constructor(
-    private val repository: ResumeRepository,
+    private val analyzeResumeUseCase: AnalyzeResumeUseCase,
+    private val getHistoryUseCase: GetHistoryUseCase,
+    private val deleteRecordUseCase: DeleteRecordUseCase,
     private val pdfHelper: PdfHelper
 ) : ViewModel() {
 
@@ -40,12 +45,13 @@ class ResumeViewModel @Inject constructor(
     }
 
     // 3. Observe historical records from the database
-    val analysisHistory: StateFlow<List<AnalysisRecord>> = repository.getHistory()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    val analysisHistory: StateFlow<List<AnalysisRecord>> =
+        getHistoryUseCase()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
     // 4. Refactored processing with precise state transitions and error handling
     fun processResume(uri: Uri, fileName: String) {
@@ -64,8 +70,11 @@ class ResumeViewModel @Inject constructor(
                 }
 
                 // Step B: Send to repository/API for analysis
-                val result = repository.analyzeWithJD(fileName, resumeText, _jobDescription.value)
-
+                val result = analyzeResumeUseCase(
+                    fileName,
+                    resumeText,
+                    _jobDescription.value
+                )
                 // Step C: Push Success state
                 _uiState.value = ResumeUiState.Success(result)
 
@@ -79,7 +88,7 @@ class ResumeViewModel @Inject constructor(
     fun deleteRecord(record: AnalysisRecord) {
         viewModelScope.launch {
             try {
-                repository.deleteRecord(record)
+                deleteRecordUseCase(record)
             } catch (e: Exception) {
                 // Optional: You could expose a separate single-event channel (like a SharedFlow)
                 // to show a SnackBar if a deletion fails.

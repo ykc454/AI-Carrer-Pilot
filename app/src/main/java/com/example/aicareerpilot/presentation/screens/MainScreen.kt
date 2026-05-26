@@ -1,14 +1,9 @@
-package com.example.aicareerpilot.ui.screen
+package com.example.aicareerpilot.presentation.screens
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
+import SignInScreen
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,9 +25,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
+import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
 
@@ -41,7 +37,11 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object Home : Screen("home", Icons.Default.Home, "Home")
     object History : Screen("history", Icons.Default.History, "History")
     object Profile : Screen("profile", Icons.Default.Person, "Profile")
-
+    object SignIn : Screen(
+        "sign_in",
+        Icons.Default.Login,
+        "Sign In"
+    )
     object HistoryDetail : Screen(
         route = "history_detail/{recordId}",
         icon = Icons.Default.Description,
@@ -63,6 +63,13 @@ fun MainScreen(viewModel: ResumeViewModel) {
     val screens = listOf(Screen.Home, Screen.History, Screen.Profile)
     val deviceType = getDeviceType()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val authViewModel: AuthViewModel = hiltViewModel()
+
+    val startDestination =
+        if (authViewModel.isLoggedIn())
+            Screen.Home.route
+        else
+            Screen.SignIn.route
     // YOUR ROW IS BACK HERE
     Row(modifier = Modifier.fillMaxSize()) {
 
@@ -187,7 +194,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
         ) { padding ->
             NavHost(
                 navController = navController,
-                startDestination = Screen.Home.route,
+                startDestination = startDestination,
                 modifier = Modifier.padding(padding)
             ) {
                 composable(Screen.Home.route) {
@@ -202,19 +209,27 @@ fun MainScreen(viewModel: ResumeViewModel) {
                         }
                     )
                 }
-                composable(Screen.History.route) { HistoryScreen(
-                    viewModel,
-                    onRecordClick = { record ->
-                        navController.navigate(
-                            Screen.HistoryDetail.createRoute(record.id)
-                        ) {
-                            launchSingleTop = true
+                composable(Screen.SignIn.route) {
+                    SignInScreen(
+                        navController
+                    )
+                }
+                composable(Screen.History.route) {
+                    HistoryScreen(
+                        viewModel,
+                        onRecordClick = { record ->
+                            navController.navigate(
+                                Screen.HistoryDetail.createRoute(record.id)
+                            ) {
+                                launchSingleTop = true
+                            }
                         }
-                    }
-                )
+                    )
                 }
 
-                composable(Screen.Profile.route) { /* ProfileScreen() */ }
+                composable(Screen.Profile.route) {
+                    ProfileScreen(navController)
+                }
 
                 composable("history_detail/{recordId}") { backStackEntry ->
                     val recordId = backStackEntry.arguments?.getString("recordId")?.toIntOrNull()

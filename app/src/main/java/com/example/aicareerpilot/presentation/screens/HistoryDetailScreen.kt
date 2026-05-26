@@ -1,7 +1,8 @@
-package com.example.aicareerpilot.ui.screen
+package com.example.aicareerpilot.presentation.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -37,7 +38,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.mikepenz.markdown.m3.Markdown
 
 @Composable
@@ -123,7 +124,7 @@ fun HistoryDetailScreen(
             colors = CardDefaults.cardColors(
                 containerColor = colorScheme.surfaceVariant.copy(alpha = 0.15f)
             ),
-            border = androidx.compose.foundation.BorderStroke(
+            border = BorderStroke(
                 width = 1.dp,
                 color = Color.White.copy(alpha = 0.1f)
             )

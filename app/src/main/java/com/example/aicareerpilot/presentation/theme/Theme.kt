@@ -1,4 +1,4 @@
-package com.example.aicareerpilot.ui.theme
+package com.example.aicareerpilot.presentation.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme

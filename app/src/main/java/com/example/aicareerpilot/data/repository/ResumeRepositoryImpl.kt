@@ -1,17 +1,18 @@
 package com.example.aicareerpilot.data.repository
 
 import com.example.aicareerpilot.data.local.AnalysisDao
-import com.example.aicareerpilot.data.model.AnalysisRecord
+import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.domain.repository.ResumeRepository
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 
-class ResumeRepository @Inject constructor(
+class ResumeRepositoryImpl @Inject constructor(
     private val generativeModel: GenerativeModel,
     private val analysisDao: AnalysisDao
-) {
-    suspend fun analyzeWithJD(
+): ResumeRepository {
+    override suspend fun analyzeWithJD(
         fileName: String,
         resumeText: String,
         jobDescription: String
@@ -184,11 +185,11 @@ class ResumeRepository @Inject constructor(
         return 0 // Fallback condition handler identifier
     }
 
-    fun getHistory(): Flow<List<AnalysisRecord>> {
+    override fun getHistory(): Flow<List<AnalysisRecord>> {
         return analysisDao.getAllRecords()
     }
 
-     suspend fun deleteRecord(record : AnalysisRecord){
+     override suspend fun deleteRecord(record : AnalysisRecord){
         analysisDao.deleteRecord(record)
     }
 

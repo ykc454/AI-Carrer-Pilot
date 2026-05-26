@@ -2,3 +2,4 @@
 .idea/
 .kotlin/
 *.log
+app/google-services.json

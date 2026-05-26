@@ -1,7 +1,7 @@
 package com.example.aicareerpilot.di
 
 
-
+import com.google.firebase.auth.FirebaseAuth
 import android.content.Context
 import androidx.room.Room
 import com.example.aicareerpilot.data.local.AnalysisDao
@@ -15,38 +15,71 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.example.aicareerpilot.BuildConfig
+import com.example.aicareerpilot.domain.repository.AuthRepository
+import com.example.aicareerpilot.domain.repository.ResumeRepository
+import com.example.aicareerpilot.data.repository.FirebaseAuthRepository
+import com.example.aicareerpilot.data.repository.ResumeRepositoryImpl
+import dagger.Binds
+
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+abstract class AppModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideGenerativeModel(): GenerativeModel {
-        return GenerativeModel(
-            modelName = "gemini-3.1-flash-lite-preview",
-            apiKey = BuildConfig.API_KEY
-        )
-    }
+    abstract fun bindResumeRepository(
+        impl: ResumeRepositoryImpl
+    ): ResumeRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun providePdfHelper(@ApplicationContext context: Context): PdfHelper {
-        return PdfHelper(context)
-    }
+    abstract fun bindAuthRepository(
+        impl: FirebaseAuthRepository
+    ): AuthRepository
 
-    @Provides
-    @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "ai_career_pilot_db"
-        ).build()
-    }
+    companion object {
 
-    @Provides
-    fun provideAnalysisDao(database: AppDatabase): AnalysisDao {
-        return database.analysisDao()
+        @Provides
+        @Singleton
+        fun provideGenerativeModel(): GenerativeModel {
+            return GenerativeModel(
+                modelName = "gemini-3.5-flash",
+                apiKey = BuildConfig.API_KEY
+            )
+        }
+
+        @Provides
+        @Singleton
+        fun providePdfHelper(
+            @ApplicationContext context: Context
+        ): PdfHelper {
+            return PdfHelper(context)
+        }
+
+        @Provides
+        @Singleton
+        fun provideFirebaseAuth(): FirebaseAuth {
+            return FirebaseAuth.getInstance()
+        }
+
+        @Provides
+        @Singleton
+        fun provideDatabase(
+            @ApplicationContext context: Context
+        ): AppDatabase {
+            return Room.databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "ai_career_pilot_db"
+            ).build()
+        }
+
+        @Provides
+        fun provideAnalysisDao(
+            database: AppDatabase
+        ): AnalysisDao {
+            return database.analysisDao()
+        }
     }
 }

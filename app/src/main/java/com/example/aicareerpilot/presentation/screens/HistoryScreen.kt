@@ -1,4 +1,4 @@
-package com.example.aicareerpilot.ui.screen
+package com.example.aicareerpilot.presentation.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -45,11 +44,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.aicareerpilot.data.model.AnalysisRecord
-import com.example.aicareerpilot.ui.viewmodel.ResumeViewModel
+import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HistoryScreen(
@@ -227,10 +228,10 @@ fun HistoryCard(
                 ) {
 
                     val formattedTime = remember(record.timestamp) {
-                        java.text.SimpleDateFormat(
+                        SimpleDateFormat(
                             "dd MMM, hh:mm a",
-                            java.util.Locale.getDefault()
-                        ).format(java.util.Date(record.timestamp))
+                            Locale.getDefault()
+                        ).format(Date(record.timestamp))
                     }
 
                     Text(
