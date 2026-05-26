@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -65,6 +66,8 @@ fun MainScreen(viewModel: ResumeViewModel) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val authViewModel: AuthViewModel = hiltViewModel()
 
+    val showBars = currentRoute != Screen.SignIn.route
+
     val startDestination =
         if (authViewModel.isLoggedIn())
             Screen.Home.route
@@ -99,6 +102,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
+                if (showBars) {
                 LargeTopAppBar(
 
                     title = {
@@ -129,14 +133,16 @@ fun MainScreen(viewModel: ResumeViewModel) {
                     ),
                     scrollBehavior = scrollBehavior
                 )
+            }
             },
             bottomBar = {
-                if (deviceType == DeviceType.PHONE) {
+                if (showBars && deviceType == DeviceType.PHONE) {
                     NavigationBar(
                         containerColor = Color.Black,
                         tonalElevation = 0.dp,
-                        // Removes extra system padding
-                        modifier = Modifier.height(70.dp) // Set your desired height here (standard is 80dp)
+                        modifier = Modifier
+                            .navigationBarsPadding()
+                            .height(58.dp)
                     ) {
                         screens.forEach { screen ->
                             val isSelected = currentRoute == screen.route
