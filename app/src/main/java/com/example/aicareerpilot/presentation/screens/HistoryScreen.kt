@@ -64,8 +64,8 @@ fun HistoryScreen(
     val backgroundBrush = Brush.verticalGradient(
         listOf(
             Color(0xFF000000),
-            Color(0xFF101010),
-            Color(0xFF505050)
+            Color(0xFF000000),
+            Color(0xFF0C0C0C)
         )
     )
 

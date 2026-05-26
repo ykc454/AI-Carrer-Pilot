@@ -87,13 +87,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                brush = Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF000000),
-                        Color(0xFF0A0A0A),
-                        Color(0xFF484747)
-                    )
-                )
+                Color.Black
             )
             .drawBehind {
                 drawCircle(
@@ -195,16 +189,6 @@ fun HomeScreen(
                     }
                 }
 
-                val year = "2026"
-                Text(
-                    text = "© $year Yash Chaudhari — All rights reserved",
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 10.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
-                )
             }
         }
 
