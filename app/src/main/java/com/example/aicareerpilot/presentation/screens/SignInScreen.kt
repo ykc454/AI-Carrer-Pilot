@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -310,16 +309,6 @@ fun SignInScreen(
                 }
             }
         }
-        val year = "2026"
-        Text(
-            text = "© $year Yash Chaudhari — All rights reserved",
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 10.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
-        )
     }
 }
 

@@ -1,7 +1,7 @@
 package com.example.aicareerpilot.data.repository
 
 import com.example.aicareerpilot.data.local.AnalysisDao
-import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.domain.repository.ResumeRepository
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.flow.Flow

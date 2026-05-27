@@ -45,10 +45,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
@@ -122,7 +120,7 @@ fun HistoryScreen(
                             center = Offset(size.width * 0.3f, size.height * 0.2f)
                         )
                     }
-                    .padding(16.dp),
+                    .padding(start = 10.dp,end = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(history) { record ->
@@ -183,19 +181,12 @@ fun HistoryCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = record.fileName,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
 
                         Spacer(Modifier.height(2.dp))
 
                         Text(
                             text = "Resume Analysis",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.titleMedium,
                             color = colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     }

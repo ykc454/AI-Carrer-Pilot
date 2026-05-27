@@ -1,6 +1,6 @@
 package com.example.aicareerpilot.data.local
 import androidx.room.*
-import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import kotlinx.coroutines.flow.Flow
 
 @Dao

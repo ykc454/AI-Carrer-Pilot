@@ -3,8 +3,7 @@ package com.example.aicareerpilot.presentation.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.aicareerpilot.domain.model.AnalysisRecord
-import com.example.aicareerpilot.data.repository.ResumeRepositoryImpl
+import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.domain.usecases.AnalyzeResumeUseCase
 import com.example.aicareerpilot.domain.usecases.DeleteRecordUseCase
 import com.example.aicareerpilot.domain.usecases.GetHistoryUseCase

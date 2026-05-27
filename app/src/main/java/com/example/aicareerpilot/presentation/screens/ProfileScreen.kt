@@ -11,19 +11,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -80,16 +75,14 @@ fun ProfileScreen(navController: NavHostController) {
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
 
-        // =========================
         // HEADER CARD
-        // =========================
 
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
             border = BorderStroke(
                 width = 1.dp,
-                color = BorderColor
+                color = Color(0xFF5E5E5E)
             ),
             colors = CardDefaults.cardColors(
                 containerColor = CardColor
@@ -171,11 +164,10 @@ fun ProfileScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // =========================
-        // ACTIONS
-        // =========================
 
-        ProfileSectionTitle(title = "Settings")
+        // ACTIONS
+
+        ProfileSectionTitle(title = "Legal & Information")
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -247,8 +239,8 @@ fun ProfileScreen(navController: NavHostController) {
         }
 
         ActionItem(
-            icon = Icons.Default.Logout,
-            title = "Logout",
+            Icons.AutoMirrored.Filled.Logout,
+                    title = "Logout",
             isLogout = true
         ) {
 
@@ -283,9 +275,7 @@ fun ProfileScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(20.dp))
     }
 
-    // =========================
     // LOGOUT DIALOG
-    // =========================
 
     if (showLogoutDialog) {
 
@@ -337,7 +327,7 @@ fun ProfileScreen(navController: NavHostController) {
 
                     Text(
                         text = "Logout",
-                        color = Color.White,
+                        color = Color.Red,
                         fontWeight = FontWeight.Bold
                     )
                 }

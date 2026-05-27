@@ -1,4 +1,4 @@
-package com.example.aicareerpilot.domain.model
+package com.example.aicareerpilot.data.model.gemini_response
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

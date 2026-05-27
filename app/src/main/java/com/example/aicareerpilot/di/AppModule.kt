@@ -1,6 +1,5 @@
 package com.example.aicareerpilot.di
 
-
 import com.google.firebase.auth.FirebaseAuth
 import android.content.Context
 import androidx.room.Room
@@ -45,7 +44,7 @@ abstract class AppModule {
         fun provideGenerativeModel(): GenerativeModel {
             return GenerativeModel(
                 modelName = "gemini-2.5-flash",
-                apiKey = BuildConfig.API_KEY
+                apiKey = BuildConfig.GEMINI_API_KEY
             )
         }
 

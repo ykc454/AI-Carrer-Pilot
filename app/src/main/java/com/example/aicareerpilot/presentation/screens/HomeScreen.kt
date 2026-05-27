@@ -1,40 +1,31 @@
 package com.example.aicareerpilot.presentation.screens
 
-import android.R.attr.scaleX
-import android.R.attr.scaleY
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.History
@@ -42,20 +33,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
@@ -64,9 +47,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.presentation.viewmodel.ResumeUiState
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,14 +72,19 @@ fun HomeScreen(
     LaunchedEffect(uiState) {
         when (uiState) {
             is ResumeUiState.Success -> {
-                Toast.makeText(context, "Analysis Complete!", Toast.LENGTH_SHORT).show()
 
-                // If you want to automatically open the newest record on success:
+                Toast.makeText(
+                    context,
+                    "Analysis Complete!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                delay(500)
+
                 history.firstOrNull()?.let { newestRecord ->
                     onRecordClick(newestRecord)
                 }
 
-                // Reset back to Idle so the user can upload another one later
                 viewModel.resetUiState()
             }
             is ResumeUiState.Error -> {
@@ -135,7 +124,7 @@ fun HomeScreen(
         val isTablet = maxWidth > 600.dp
 
         if (isTablet) {
-            // 🔥 TABLET UI
+            //TABLET UI
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -174,12 +163,12 @@ fun HomeScreen(
                 }
             }
         } else {
-            // 📱 PHONE UI
+            //PHONE UI
             Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = 15.dp),
                     contentPadding = PaddingValues(top = 20.dp, bottom = 80.dp)
                 ) {
                     item { Spacer(modifier = Modifier.height(20.dp)) }
@@ -284,18 +273,44 @@ fun JDCard(jd: String, onChange: (String) -> Unit) {
             onValueChange = onChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 120.dp, max = 200.dp)
+                .heightIn(min = 140.dp, max = 200.dp)
                 .padding(8.dp),
+
             shape = RoundedCornerShape(20.dp),
+
             placeholder = {
-                Text("Paste Job Description...", color = Color.LightGray)
+                Text(
+                    "Paste Job Description...",
+                    color = Color.LightGray
+                )
             },
+
+            trailingIcon = {
+
+                if (jd.isNotEmpty()) {
+
+                    IconButton(
+                        onClick = {
+                            onChange("")
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear Text",
+                            tint = Color.White
+                        )
+                    }
+                }
+            },
+
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
             ),
+
             keyboardActions = KeyboardActions(
                 onDone = { keyboardController?.hide() }
             ),
+
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,

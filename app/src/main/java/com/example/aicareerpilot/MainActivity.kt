@@ -7,6 +7,7 @@ import com.example.aicareerpilot.presentation.theme.AICareerPilotTheme
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import android.graphics.Color
+import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.aicareerpilot.presentation.screens.MainScreen
@@ -21,13 +22,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
-        // ✅ Edge-to-edge layout (modern Android UI)
+        //Edge-to-edge layout (modern Android UI)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // ✅ Status bar color = match your black UI
-        window.statusBarColor = Color.BLACK
-
-        // ✅ White icons on dark background
+        //Status bar color = match your black UI
+        enableEdgeToEdge()
+        //White icons on dark background
         WindowInsetsControllerCompat(window, window.decorView)
             .isAppearanceLightStatusBars = false
 

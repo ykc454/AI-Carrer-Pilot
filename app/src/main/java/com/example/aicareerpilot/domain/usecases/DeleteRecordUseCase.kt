@@ -1,6 +1,6 @@
 package com.example.aicareerpilot.domain.usecases
 
-import com.example.aicareerpilot.domain.model.AnalysisRecord
+import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.domain.repository.ResumeRepository
 import javax.inject.Inject
 

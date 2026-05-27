@@ -3,8 +3,12 @@ val localProperties = Properties().apply {
     load(rootProject.file("local.properties").inputStream())
 }
 
-val apiKey = localProperties.getProperty("API_KEY")
+val gemini_api_key = localProperties.getProperty("GEMINI_API_KEY")
     ?: throw GradleException("API_KEY not found in local.properties")
+
+val newsApiKey = localProperties.getProperty("NEWS_API_KEY")
+    ?: throw GradleException("News_Api_Key not found")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -39,10 +43,33 @@ android {
     }
     buildTypes {
         debug {
-            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+
+            buildConfigField(
+                "String",
+                "GEMINI_API_KEY",
+                "\"$gemini_api_key\""
+            )
+
+            buildConfigField(
+                "String",
+                "NEWS_API_KEY",
+                "\"$newsApiKey\""
+            )
         }
+
         release {
-            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+
+            buildConfigField(
+                "String",
+                "GEMINI_API_KEY",
+                "\"$gemini_api_key\""
+            )
+
+            buildConfigField(
+                "String",
+                "NEWS_API_KEY",
+                "\"$newsApiKey\""
+            )
         }
     }
 }
@@ -118,5 +145,10 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    //Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
 }

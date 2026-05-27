@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -37,9 +38,15 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object Home : Screen("home", Icons.Default.Home, "Home")
     object History : Screen("history", Icons.Default.History, "History")
     object Profile : Screen("profile", Icons.Default.Person, "Profile")
+
+    object JobMarket : Screen(
+        "job_market",
+        Icons.Default.Work,
+        "Market"
+    )
     object SignIn : Screen(
         "sign_in",
-        Icons.Default.Login,
+        Icons.AutoMirrored.Filled.Login,
         "Sign In"
     )
     object HistoryDetail : Screen(
@@ -59,8 +66,32 @@ fun MainScreen(viewModel: ResumeViewModel) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Home.route
+    val screenSubtitle = when (currentRoute) {
 
-    val screens = listOf(Screen.Home, Screen.History, Screen.Profile)
+        Screen.Home.route ->
+            "Analyze your resume against any job description"
+
+        Screen.History.route ->
+            "Track your previous AI resume analyses"
+
+        Screen.JobMarket.route ->
+            "Explore current hiring and market trends"
+
+        Screen.Profile.route ->
+            "Manage your account and app preferences"
+
+        Screen.SignIn.route ->
+            "Secure AI-powered career assistance"
+
+        else ->
+            "AI-powered career growth platform"
+    }
+    val screens = listOf(
+        Screen.Home,
+        Screen.History,
+        Screen.JobMarket,
+        Screen.Profile
+    )
     val deviceType = getDeviceType()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -72,6 +103,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
             Screen.Home.route
         else
             Screen.SignIn.route
+
     // YOUR ROW IS BACK HERE
     Row(modifier = Modifier.fillMaxSize()) {
 
@@ -119,7 +151,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
                             Spacer(Modifier.height(6.dp))
 
                             Text(
-                                text = "Analyze your resume against any job description",
+                                text = screenSubtitle,
                                 Modifier.padding(bottom = 11.dp),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.White.copy(alpha = 0.7f)
@@ -219,6 +251,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
                         navController
                     )
                 }
+
                 composable(Screen.History.route) {
                     HistoryScreen(
                         viewModel,
@@ -230,6 +263,10 @@ fun MainScreen(viewModel: ResumeViewModel) {
                             }
                         }
                     )
+                }
+
+                composable(Screen.JobMarket.route) {
+                    JobMarketScreen()
                 }
 
                 composable(Screen.Profile.route) {

@@ -122,11 +122,11 @@ fun HistoryDetailScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = colorScheme.surfaceVariant.copy(alpha = 0.15f)
+                containerColor = Color.Black
             ),
             border = BorderStroke(
                 width = 1.dp,
-                color = Color.White.copy(alpha = 0.1f)
+                color = Color(0xFF444444)
             )
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
