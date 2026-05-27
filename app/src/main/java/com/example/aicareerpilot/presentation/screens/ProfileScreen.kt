@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -181,7 +182,9 @@ fun ProfileScreen(navController: NavHostController) {
                 Uri.parse("https://ykc454.github.io/ai-career-pilot-privacy/")
             )
 
-            context.startActivity(intent)
+            runCatching {
+                context.startActivity(intent)
+            }
         }
 
         ActionItem(
@@ -193,7 +196,9 @@ fun ProfileScreen(navController: NavHostController) {
                 Uri.parse("https://ykc454.github.io/ai_career_pilot_about_app/")
             )
 
-            context.startActivity(intent)
+            runCatching {
+                context.startActivity(intent)
+            }
 
         }
 
@@ -212,7 +217,9 @@ fun ProfileScreen(navController: NavHostController) {
                 )
             }
 
-            context.startActivity(intent)
+            runCatching {
+                context.startActivity(intent)
+            }
         }
 
         ActionItem(
@@ -229,13 +236,15 @@ fun ProfileScreen(navController: NavHostController) {
                     "Check out AI Career Pilot app!"
                 )
             }
-
-            context.startActivity(
-                Intent.createChooser(
-                    shareIntent,
-                    "Share App"
+            runCatching {
+                context.startActivity(
+                    Intent.createChooser(
+                        shareIntent,
+                        "Share App"
+                    )
                 )
-            )
+            }
+
         }
 
         ActionItem(
@@ -366,68 +375,8 @@ fun ProfileSectionTitle(
 }
 
 @Composable
-fun FeatureItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    subtitle: String
-) {
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 14.dp),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = CardColor
-        )
-    ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Surface(
-                shape = CircleShape,
-                color = Color.White.copy(alpha = 0.06f)
-            ) {
-
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.padding(14.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column {
-
-                Text(
-                    text = title,
-                    color = PrimaryWhite,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = subtitle,
-                    color = SecondaryText,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun ActionItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     title: String,
     isLogout: Boolean = false,
     onClick: () -> Unit
@@ -456,8 +405,7 @@ fun ActionItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isLogout) Color.White else Color.White
-            )
+                tint = Color.White            )
 
             Spacer(modifier = Modifier.width(16.dp))
 

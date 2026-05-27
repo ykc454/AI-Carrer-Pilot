@@ -157,9 +157,7 @@ class AuthViewModel @Inject constructor(
         _isLoggedIn.value = false
     }
 
-    fun isLoggedIn(): Boolean {
-        return authRepository.isUserLoggedIn()
-    }
+
 
     fun resetState() {
         _uiState.value = AuthUiState.Idle

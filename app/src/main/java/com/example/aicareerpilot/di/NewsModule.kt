@@ -1,5 +1,6 @@
 package com.example.aicareerpilot.di
 
+import com.example.aicareerpilot.BuildConfig
 import com.example.aicareerpilot.data.remote.NewsApi
 import dagger.Module
 import dagger.Provides
@@ -20,7 +21,12 @@ object NewsModule {
     fun provideNewsApi(): NewsApi {
 
         val logging = HttpLoggingInterceptor()
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+        logging.setLevel(
+            if (BuildConfig.DEBUG)
+                HttpLoggingInterceptor.Level.BODY
+            else
+                HttpLoggingInterceptor.Level.NONE
+        )
 
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)

@@ -5,10 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.aicareerpilot.presentation.theme.AICareerPilotTheme
 import androidx.activity.viewModels
-import androidx.core.view.WindowCompat
-import android.graphics.Color
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.aicareerpilot.presentation.screens.MainScreen
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel

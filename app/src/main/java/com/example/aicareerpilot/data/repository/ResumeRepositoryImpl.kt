@@ -19,7 +19,11 @@ class ResumeRepositoryImpl @Inject constructor(
     ): String {
 
         val targetKeywords = extractKeywords(jobDescription)
+        val safeResumeText =
+            resumeText.take(12000)
 
+        val safeJobDescription =
+            jobDescription.take(4000)
         val matchedKeywords = targetKeywords.filter {
             resumeText.contains(it, ignoreCase = true)
         }
@@ -33,31 +37,59 @@ class ResumeRepositoryImpl @Inject constructor(
             // ================= AI CALL =================
 
             val prompt = """
-            You are an expert HR Recruiter and ATS optimizer.
+You are a senior ATS recruiter, hiring manager, and resume optimization expert.
 
-            JOB DESCRIPTION:
-            $jobDescription
+Your task is to analyze the RESUME against the JOB DESCRIPTION and provide a strict structured response.
 
-            RESUME TEXT:
-            $resumeText
+IMPORTANT RULES:
+- Return ONLY plain text.
+- Do NOT use markdown headings like # or ##.
+- Do NOT add explanations outside the required format.
+- Be accurate and professional.
+- Evaluate ATS compatibility, technical skills, role alignment, experience relevance, and missing keywords.
+- Score must be realistic and strict.
+- If resume lacks major required skills, reduce score accordingly.
+- Mention both strengths and weaknesses.
 
-            Give:(use only * or ** for font avoid # or ##)
-            1. Match Summary
-            -points
-            add line
-            2. Missing Keywords
-            -points
-            add line
-            3. Things to Avoid
-            -points
-            add line
-            4. Improvement Suggestions
-            -points
-            add line
+OUTPUT FORMAT (FOLLOW EXACTLY):
 
-            At end:
-            AI_MATCH_SCORE: [0-100]
-        """.trimIndent()
+MATCH_SCORE: <number between 0-100>
+
+MATCH_SUMMARY:
+- point
+- point
+- point
+
+MATCHED_SKILLS:
+- skill
+- skill
+- skill
+
+MISSING_KEYWORDS:
+- keyword
+- keyword
+- keyword
+
+THINGS_TO_IMPROVE:
+- point
+- point
+- point
+
+ATS_OPTIMIZATION_TIPS:
+- tip
+- tip
+- tip
+
+FINAL_VERDICT:
+- Short final evaluation about candidate suitability.
+
+JOB DESCRIPTION:
+$jobDescription
+
+RESUME:
+$resumeText
+
+""".trimIndent()
 
             val response = generativeModel.generateContent(prompt)
 
@@ -172,43 +204,327 @@ class ResumeRepositoryImpl @Inject constructor(
      * Resilient keyword scanner extracting core industry domain skills
      */
     private fun extractKeywords(jd: String): List<String> {
-        // Broad stop-words list to prevent structural noise from filtering as "skills"
-        val stopWords = setOf(
-            "about", "above", "across", "after", "against", "along", "around", "at",
-            "before", "behind", "below", "beneath", "beside", "between", "beyond",
-            "during", "except", "for", "from", "in", "inside", "into", "like",
-            "near", "of", "off", "on", "onto", "out", "outside", "over", "past",
-            "through", "throughout", "to", "toward", "under", "underneath", "until",
-            "up", "upon", "with", "within", "without", "should", "would", "could"
+
+        val techSkills = listOf(
+
+            // =========================
+            // ANDROID
+            // =========================
+            "android",
+            "kotlin",
+            "java",
+            "jetpack compose",
+            "compose",
+            "xml",
+            "mvvm",
+            "mvi",
+            "clean architecture",
+            "coroutines",
+            "flow",
+            "livedata",
+            "room",
+            "retrofit",
+            "dagger",
+            "hilt",
+            "navigation component",
+            "paging 3",
+            "workmanager",
+            "firebase",
+            "firebase auth",
+            "firebase firestore",
+            "firebase messaging",
+            "firebase analytics",
+            "material design",
+            "material 3",
+            "exoplayer",
+            "coil",
+            "glide",
+            "ktor",
+            "sqlite",
+
+            // =========================
+            // IOS
+            // =========================
+            "swift",
+            "swiftui",
+            "uikit",
+            "objective c",
+            "core data",
+            "combine",
+            "xcode",
+            "cocoapods",
+
+            // =========================
+            // FRONTEND
+            // =========================
+            "html",
+            "css",
+            "scss",
+            "sass",
+            "tailwind",
+            "bootstrap",
+            "javascript",
+            "typescript",
+            "react",
+            "nextjs",
+            "vue",
+            "nuxt",
+            "angular",
+            "redux",
+            "zustand",
+            "webpack",
+            "vite",
+            "jquery",
+
+            // =========================
+            // BACKEND
+            // =========================
+            "node",
+            "nodejs",
+            "express",
+            "nestjs",
+            "spring",
+            "spring boot",
+            "django",
+            "flask",
+            "fastapi",
+            "laravel",
+            "php",
+            "ruby on rails",
+            "golang",
+            "gin",
+            "ktor",
+            "rest api",
+            "graphql",
+            "microservices",
+
+            // =========================
+            // DATABASE
+            // =========================
+            "sql",
+            "mysql",
+            "postgresql",
+            "sqlite",
+            "mongodb",
+            "redis",
+            "firebase",
+            "firestore",
+            "oracle",
+            "supabase",
+            "dynamodb",
+            "cassandra",
+
+            // =========================
+            // CLOUD / DEVOPS
+            // =========================
+            "aws",
+            "azure",
+            "gcp",
+            "google cloud",
+            "docker",
+            "kubernetes",
+            "jenkins",
+            "github actions",
+            "gitlab ci",
+            "terraform",
+            "ansible",
+            "nginx",
+            "linux",
+            "bash",
+            "git",
+            "github",
+            "ci/cd",
+
+            // =========================
+            // AI / ML / DATA SCIENCE
+            // =========================
+            "python",
+            "tensorflow",
+            "pytorch",
+            "keras",
+            "machine learning",
+            "deep learning",
+            "nlp",
+            "computer vision",
+            "opencv",
+            "pandas",
+            "numpy",
+            "scikit learn",
+            "data science",
+            "data analysis",
+            "power bi",
+            "tableau",
+            "hugging face",
+            "langchain",
+            "openai",
+            "gemini",
+            "llm",
+            "rag",
+            "vector database",
+            "prompt engineering",
+
+            // =========================
+            // CYBERSECURITY
+            // =========================
+            "penetration testing",
+            "ethical hacking",
+            "burp suite",
+            "wireshark",
+            "metasploit",
+            "owasp",
+            "network security",
+            "cryptography",
+            "soc",
+            "siem",
+
+            // =========================
+            // TESTING / QA
+            // =========================
+            "junit",
+            "espresso",
+            "mockk",
+            "mockito",
+            "selenium",
+            "cypress",
+            "playwright",
+            "postman",
+            "unit testing",
+            "ui testing",
+            "automation testing",
+
+            // =========================
+            // UI/UX DESIGN
+            // =========================
+            "figma",
+            "adobe xd",
+            "photoshop",
+            "illustrator",
+            "ui design",
+            "ux design",
+            "wireframing",
+            "prototyping",
+
+            // =========================
+            // PROJECT MANAGEMENT
+            // =========================
+            "agile",
+            "scrum",
+            "jira",
+            "confluence",
+            "kanban",
+            "product management",
+
+            // =========================
+            // BUSINESS / ANALYTICS
+            // =========================
+            "excel",
+            "powerpoint",
+            "communication",
+            "leadership",
+            "problem solving",
+            "critical thinking",
+            "business analysis",
+            "stakeholder management",
+
+            // =========================
+            // MARKETING
+            // =========================
+            "seo",
+            "sem",
+            "google ads",
+            "meta ads",
+            "content marketing",
+            "social media marketing",
+            "email marketing",
+            "copywriting",
+            "analytics",
+
+            // =========================
+            // FINANCE
+            // =========================
+            "financial analysis",
+            "accounting",
+            "quickbooks",
+            "taxation",
+            "investment banking",
+            "forecasting",
+
+            // =========================
+            // HR / RECRUITMENT
+            // =========================
+            "recruitment",
+            "talent acquisition",
+            "employee engagement",
+            "payroll",
+            "hr analytics",
+
+            // =========================
+            // SALES
+            // =========================
+            "salesforce",
+            "crm",
+            "b2b sales",
+            "lead generation",
+            "negotiation",
+
+            // =========================
+            // HEALTHCARE
+            // =========================
+            "patient care",
+            "clinical research",
+            "medical coding",
+            "ehr",
+            "hipaa",
+
+            // =========================
+            // EDUCATION
+            // =========================
+            "curriculum development",
+            "classroom management",
+            "teaching",
+            "lesson planning",
+
+            // =========================
+            // GENERAL SOFTWARE TERMS
+            // =========================
+            "api",
+            "sdk",
+            "oop",
+            "data structures",
+            "algorithms",
+            "system design",
+            "multithreading",
+            "networking",
+            "authentication",
+            "authorization",
+            "oauth",
+            "jwt",
+            "performance optimization"
         )
 
-        return jd.split(Regex("[\\s\n,./:!?()|+\\-]+")) // Cleaner token split including paths
-            .map { it.trim().lowercase() }
-            .filter { token ->
-                token.length >= 3 &&
-                        token.any { it.isLetter() } &&
-                        !stopWords.contains(token)
-            }
-            .distinct()
+        val normalizedJD = jd.lowercase()
+
+        return techSkills.filter { skill ->
+            normalizedJD.contains(skill)
+        }.distinct()
     }
 
     /**
      * Resilient score parser utilizing case-insensitive boundaries and lazy digit lookups
      */
     private fun extractAiScore(text: String): Int {
-        val patterns = listOf(
-            "AI_MATCH_SCORE:\\s*(\\d+)".toRegex(RegexOption.IGNORE_CASE),
-            "MATCH_SCORE:\\s*(\\d+)".toRegex(RegexOption.IGNORE_CASE),
-            "SCORE:\\s*(\\d+)".toRegex(RegexOption.IGNORE_CASE)
+
+        val regex = Regex(
+            "MATCH_SCORE:\\s*(\\d+)",
+            RegexOption.IGNORE_CASE
         )
 
-        for (regex in patterns) {
-            val match = regex.find(text)
-            if (match != null) {
-                return match.groupValues[1].toIntOrNull()?.coerceIn(0, 100) ?: 0
-            }
-        }
-        return 0 // Fallback condition handler identifier
+        return regex.find(text)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.toIntOrNull()
+            ?.coerceIn(0, 100)
+            ?: 0
     }
 
     override fun getHistory(): Flow<List<AnalysisRecord>> {

@@ -19,12 +19,14 @@ class PdfHelper(private val context: Context) {
     suspend fun extractTextFromUri(uri: Uri): String = withContext(Dispatchers.IO) {
         try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val document = PDDocument.load(inputStream)
-                val stripper = PDFTextStripper()
-                val text = stripper.getText(document)
-                document.close()
-                return@withContext text
+
+                PDDocument.load(inputStream).use { document ->
+                    val stripper = PDFTextStripper()
+                    return@withContext stripper.getText(document)
+                }
+
             } ?: "Error: Could not open file"
+
         } catch (e: Exception) {
             "Error: ${e.localizedMessage}"
         }

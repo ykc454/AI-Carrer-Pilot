@@ -14,9 +14,14 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,14 +31,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
-
+import androidx.hilt.navigation.compose.hiltViewModel
 sealed class Screen(val route: String, val icon: ImageVector, val label: String) {
     object Home : Screen("home", Icons.Default.Home, "Home")
     object History : Screen("history", Icons.Default.History, "History")
@@ -95,16 +99,15 @@ fun MainScreen(viewModel: ResumeViewModel) {
     val deviceType = getDeviceType()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val authViewModel: AuthViewModel = hiltViewModel()
-
+    val isLoggedIn = authViewModel.isLoggedIn.collectAsState()
     val showBars = currentRoute != Screen.SignIn.route
 
     val startDestination =
-        if (authViewModel.isLoggedIn())
+        if (isLoggedIn.value)
             Screen.Home.route
         else
             Screen.SignIn.route
 
-    // YOUR ROW IS BACK HERE
     Row(modifier = Modifier.fillMaxSize()) {
 
         // 1. TABLET SIDE: Navigation Rail
@@ -140,7 +143,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
                         Column {
                             Text(
                                 text = "AI Career Pilot",
-                                style = if (getDeviceType() == DeviceType.TABLET)
+                                style = if (deviceType == DeviceType.TABLET)
                                     MaterialTheme.typography.displayMedium
                                 else
                                     MaterialTheme.typography.displaySmall,
@@ -197,8 +200,6 @@ fun MainScreen(viewModel: ResumeViewModel) {
                                         verticalArrangement = Arrangement.Center
                                     ){
                                         Box(contentAlignment = Alignment.Center) {
-                                        // The "Spotlight" Glow
-
 
                                         Icon(
                                             imageVector = screen.icon,

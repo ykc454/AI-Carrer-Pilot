@@ -6,7 +6,7 @@ interface AuthRepository {
 
     suspend fun googleLogin(idToken: String): Result<String>
 
-    fun observeAuthState(): Flow<String?>
+
 
     fun logout()
 

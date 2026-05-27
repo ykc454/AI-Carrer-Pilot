@@ -188,7 +188,7 @@ fun CircularScoreMeter(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "match",
+                text = "ATS",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.White.copy(alpha = 0.5f)
             )

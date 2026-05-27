@@ -33,18 +33,6 @@ class FirebaseAuthRepository @Inject constructor(
     }
 
 
-    override fun observeAuthState(): Flow<String?> = callbackFlow {
-        val listener = FirebaseAuth.AuthStateListener { auth ->
-            trySend(auth.currentUser?.uid)
-        }
-
-        firebaseAuth.addAuthStateListener(listener)
-
-        awaitClose {
-            firebaseAuth.removeAuthStateListener(listener)
-        }
-    }
-
     override fun logout() {
         firebaseAuth.signOut()
     }

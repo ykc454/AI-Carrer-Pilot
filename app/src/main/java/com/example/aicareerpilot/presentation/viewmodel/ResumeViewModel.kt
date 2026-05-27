@@ -63,7 +63,7 @@ class ResumeViewModel @Inject constructor(
             try {
                 // Step A: Extract text from PDF
                 val resumeText = pdfHelper.extractTextFromUri(uri)
-                if (resumeText.isNullOrBlank()) {
+                if (resumeText.isBlank()) {
                     _uiState.value = ResumeUiState.Error("Could not extract any readable text from the PDF.")
                     return@launch
                 }

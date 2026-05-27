@@ -10,7 +10,17 @@ interface NewsApi {
     suspend fun getJobNews(
 
         @Query("q")
-        query: String = "software jobs OR hiring trends",
+        query: String =
+            "software engineering jobs OR AI hiring OR tech careers",
+
+        @Query("language")
+        language: String = "en",
+
+        @Query("sortBy")
+        sortBy: String = "publishedAt",
+
+        @Query("pageSize")
+        pageSize: Int = 50,
 
         @Query("apiKey")
         apiKey: String

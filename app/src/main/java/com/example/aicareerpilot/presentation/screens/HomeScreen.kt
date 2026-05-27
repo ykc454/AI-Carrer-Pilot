@@ -51,7 +51,6 @@ import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.presentation.viewmodel.ResumeUiState
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import kotlinx.coroutines.delay
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -176,7 +175,15 @@ fun HomeScreen(
                     item { Spacer(modifier = Modifier.height(20.dp)) }
                     item {
                         UploadButtonPremium(isLoading) {
-                            launcher.launch("application/pdf")
+                            if (jd.isBlank()) {
+                                Toast.makeText(
+                                    context,
+                                    "Please paste job description",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                launcher.launch("application/pdf")
+                            }
                         }
                     }
                     item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -212,7 +219,7 @@ fun HomeScreen(
         }
     }
     if (showHelpDialog) {
-        helpDialog(
+        HelpDialog(
             onDismiss = {
                 showHelpDialog = false
             }
@@ -220,11 +227,11 @@ fun HomeScreen(
     }
 }
 @Composable
-fun helpDialog(
+fun HelpDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = { },
+        onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
                 onClick = { onDismiss() }
