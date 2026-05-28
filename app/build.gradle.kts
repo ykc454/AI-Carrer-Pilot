@@ -151,4 +151,13 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+
+    // DOCX/DOC Support
+    implementation("org.apache.poi:poi:5.2.5")
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
+
+    // Needed for Android compatibility
+    implementation("org.apache.xmlbeans:xmlbeans:5.1.1")
+
+
 }

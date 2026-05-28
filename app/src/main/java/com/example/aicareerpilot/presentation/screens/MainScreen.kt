@@ -31,13 +31,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.example.aicareerpilot.util.DeviceType
 import com.example.aicareerpilot.util.getDeviceType
-import androidx.hilt.navigation.compose.hiltViewModel
 sealed class Screen(val route: String, val icon: ImageVector, val label: String) {
     object Home : Screen("home", Icons.Default.Home, "Home")
     object History : Screen("history", Icons.Default.History, "History")

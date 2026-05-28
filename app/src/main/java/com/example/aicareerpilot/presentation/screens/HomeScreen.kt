@@ -1,5 +1,6 @@
 package com.example.aicareerpilot.presentation.screens
 
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -96,9 +97,18 @@ fun HomeScreen(
     }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
-        uri?.let { viewModel.processResume(it, "Resume_${System.currentTimeMillis()}.pdf") }
+
+        uri?.let {
+
+            val fileName = getFileName(context, it)
+
+            viewModel.processResume(
+                it,
+                fileName
+            )
+        }
     }
 
     BoxWithConstraints(
@@ -146,7 +156,12 @@ fun HomeScreen(
                         .weight(1f)
                 ) {
                     UploadButtonPremium(isLoading) {
-                        launcher.launch("application/pdf")
+                        launcher.launch(
+                            arrayOf(
+                                "application/pdf",
+                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            )
+                        )
                     }
 
                     Spacer(Modifier.height(24.dp))
@@ -182,7 +197,12 @@ fun HomeScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                launcher.launch("application/pdf")
+                                launcher.launch(
+                                    arrayOf(
+                                        "application/pdf",
+                                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                    )
+                                )
                             }
                         }
                     }
@@ -226,6 +246,30 @@ fun HomeScreen(
         )
     }
 }
+fun getFileName(context: Context, uri: Uri): String {
+
+    var name = "Unknown"
+
+    val cursor = context.contentResolver.query(
+        uri,
+        null,
+        null,
+        null,
+        null
+    )
+
+    cursor?.use {
+
+        val index =
+            it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+
+        if (it.moveToFirst() && index != -1) {
+            name = it.getString(index)
+        }
+    }
+
+    return name
+}
 @Composable
 fun HelpDialog(
     onDismiss: () -> Unit
@@ -247,7 +291,7 @@ fun HelpDialog(
                 Text("1. Paste the Job Description.")
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("2. Upload your Resume PDF.")
+                Text("2. Upload your Resume PDF or DOCX.")
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text("3. AI analyzes your resume against the job role.")

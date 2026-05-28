@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.room.Room
 import com.example.aicareerpilot.data.local.AnalysisDao
 import com.example.aicareerpilot.data.local.AppDatabase
-import com.example.aicareerpilot.util.PdfHelper
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.Module
 import dagger.Provides
@@ -18,6 +17,7 @@ import com.example.aicareerpilot.domain.repository.AuthRepository
 import com.example.aicareerpilot.domain.repository.ResumeRepository
 import com.example.aicareerpilot.data.repository.FirebaseAuthRepository
 import com.example.aicareerpilot.data.repository.ResumeRepositoryImpl
+import com.example.aicareerpilot.util.DocumentHelper
 import dagger.Binds
 
 
@@ -50,10 +50,10 @@ abstract class AppModule {
 
         @Provides
         @Singleton
-        fun providePdfHelper(
+        fun provideDocumentHelper(
             @ApplicationContext context: Context
-        ): PdfHelper {
-            return PdfHelper(context)
+        ): DocumentHelper {
+            return DocumentHelper(context)
         }
 
         @Provides

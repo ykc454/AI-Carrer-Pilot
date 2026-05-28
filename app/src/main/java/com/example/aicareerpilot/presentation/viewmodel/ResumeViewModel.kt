@@ -7,7 +7,7 @@ import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.domain.usecases.AnalyzeResumeUseCase
 import com.example.aicareerpilot.domain.usecases.DeleteRecordUseCase
 import com.example.aicareerpilot.domain.usecases.GetHistoryUseCase
-import com.example.aicareerpilot.util.PdfHelper
+import com.example.aicareerpilot.util.DocumentHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +28,7 @@ class ResumeViewModel @Inject constructor(
     private val analyzeResumeUseCase: AnalyzeResumeUseCase,
     private val getHistoryUseCase: GetHistoryUseCase,
     private val deleteRecordUseCase: DeleteRecordUseCase,
-    private val pdfHelper: PdfHelper
+    private val documentHelper: DocumentHelper
 ) : ViewModel() {
 
     // 1. Single source of truth for the analysis workflow state
@@ -61,8 +61,25 @@ class ResumeViewModel @Inject constructor(
             _uiState.value = ResumeUiState.Loading
 
             try {
+                val supported =
+                    fileName.endsWith(".pdf", true) ||
+                            fileName.endsWith(".docx", true)
+
+                if (!supported) {
+
+                    _uiState.value =
+                        ResumeUiState.Error(
+                            "Only PDF and DOCX files are supported."
+                        )
+
+                    return@launch
+                }
                 // Step A: Extract text from PDF
-                val resumeText = pdfHelper.extractTextFromUri(uri)
+                val resumeText =
+                    documentHelper.extractTextFromUri(
+                        uri = uri,
+                        fileName = fileName
+                    )
                 if (resumeText.isBlank()) {
                     _uiState.value = ResumeUiState.Error("Could not extract any readable text from the PDF.")
                     return@launch

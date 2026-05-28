@@ -84,10 +84,10 @@ FINAL_VERDICT:
 - Short final evaluation about candidate suitability.
 
 JOB DESCRIPTION:
-$jobDescription
+$safeJobDescription
 
 RESUME:
-$resumeText
+$safeResumeText
 
 """.trimIndent()
 
