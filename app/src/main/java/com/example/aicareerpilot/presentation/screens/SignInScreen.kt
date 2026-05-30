@@ -29,11 +29,12 @@ import androidx.navigation.NavHostController
 import com.example.aicareerpilot.R
 import com.example.aicareerpilot.presentation.viewmodel.AuthUiState
 import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import kotlin.math.PI
 import kotlin.math.sin
 
 @Composable
-fun SignInScreen(
+fun SignInScreen(resumeViewModel: ResumeViewModel,
     navController: NavHostController
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -84,6 +85,7 @@ fun SignInScreen(
     LaunchedEffect(uiState) {
         when (uiState) {
             is AuthUiState.Success -> {
+                resumeViewModel.refreshRemainingAttempts()
                 Toast.makeText(context, "Google Login Success", Toast.LENGTH_SHORT).show()
                 navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.SignIn.route) { inclusive = true }

@@ -10,5 +10,6 @@ data class AnalysisRecord(
     val timestamp: Long = System.currentTimeMillis(),
     val rawText: String,        // The text extracted from PDF
     val aiFeedback: String,     // Gemini analysis
-    val resumeScore: Int        // A 0-100 score given by the AI
+    val resumeScore: Int,      // A 0-100 score given by the AI
+    val aiMatchScore: Int // NEW
 )

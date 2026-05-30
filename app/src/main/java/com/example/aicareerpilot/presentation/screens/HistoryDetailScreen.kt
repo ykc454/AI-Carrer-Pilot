@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.mikepenz.markdown.m3.Markdown
+import java.util.Locale.getDefault
+import androidx.compose.ui.platform.LocalLocale
 
 @Composable
 fun HistoryDetailScreen(
@@ -70,51 +72,122 @@ fun HistoryDetailScreen(
         else -> Color(0xFF4CAF50) // Vibrant green
     }
 
+    val screenBg = Color(0xFF000000)
+    val cardBg = Color(0xFF000000)
+    val borderColor = Color(0xFF30363D)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(screenBg)
             .verticalScroll(rememberScrollState())
-            .padding(24.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
-        // --- HEADER SECTION ---
-        Row(
+
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            colors = CardDefaults.cardColors(
+                containerColor = cardBg
+            ),
+            border = BorderStroke(
+                1.dp,
+                borderColor
+            )
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Analysis Results",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = record.fileName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    Text(
+                        text = "Resume Analysis",
+                        color = colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = record.fileName,
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = java.text.SimpleDateFormat(
+                            "dd MMM yyyy, hh:mm a",
+                            LocalLocale.current.platformLocale
+                        ).format(java.util.Date(record.timestamp)),
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                CircularScoreMeter(
+                    score = record.resumeScore,
+                    scoreColor = scoreColor,
+                    size = 110.dp
                 )
             }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Circular Score Meter Component
-            CircularScoreMeter(
-                score = record.resumeScore,
-                scoreColor = scoreColor,
-                size = 80.dp
-            )
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // --- CONTENT SECTION (AI FEEDBACK) ---
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = cardBg
+            ),
+            border = BorderStroke(
+                1.dp,
+                borderColor
+            )
+        ) {
+
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+
+                Text(
+                    text = "Match Score",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { record.aiMatchScore / 100f },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = scoreColor
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "${record.aiMatchScore}% Match Score",
+                    color = Color.Gray
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
-            text = "AI Career Feedback",
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White.copy(alpha = 0.8f),
-            fontWeight = FontWeight.SemiBold
+            text = "AI Career Analysis",
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -122,21 +195,30 @@ fun HistoryDetailScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = Color.Black
+                containerColor = cardBg
             ),
             border = BorderStroke(
-                width = 1.dp,
-                color = Color(0xFF444444)
+                1.dp,
+                borderColor
             )
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
+
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+
                 val feedbackText = remember(record.aiFeedback) {
-                    record.aiFeedback ?: "*No feedback details available for this record.*"
+                    record.aiFeedback
+                        ?: "*No feedback details available for this record.*"
                 }
 
-                Markdown(content = feedbackText)
+                Markdown(
+                    content = feedbackText
+                )
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -154,7 +236,12 @@ fun CircularScoreMeter(
         animationSpec = tween(durationMillis = 1000),
         label = "ScoreProgress"
     )
-
+    val scoreLabel = when {
+        score >= 85 -> "Excellent"
+        score >= 70 -> "Good"
+        score >= 50 -> "Average"
+        else -> "Needs Work"
+    }
     LaunchedEffect(key1 = true) {
         animationTriggered = true
     }
@@ -180,17 +267,28 @@ fun CircularScoreMeter(
         }
 
         // Center Text Display
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
             Text(
                 text = "$score",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
+
             Text(
                 text = "ATS",
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.5f)
+                color = Color.White.copy(alpha = 0.6f)
+            )
+
+            Text(
+                text = scoreLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = scoreColor,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }

@@ -125,6 +125,7 @@ $safeResumeText
                 rawText = resumeText,
                 aiFeedback = summaryMetadata,
                 resumeScore = finalCombinedScore,
+                aiMatchScore = parsedAiScore,
                 timestamp = System.currentTimeMillis()
             )
 
@@ -191,6 +192,7 @@ $safeResumeText
                 rawText = resumeText,
                 aiFeedback = offlineFeedback,
                 resumeScore = keywordScore,
+                aiMatchScore = keywordScore,
                 timestamp = System.currentTimeMillis()
             )
 

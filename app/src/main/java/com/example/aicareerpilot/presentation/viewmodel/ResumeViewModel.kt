@@ -5,8 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.example.aicareerpilot.domain.usecases.AnalyzeResumeUseCase
+import com.example.aicareerpilot.domain.usecases.CanAnalyzeUseCase
 import com.example.aicareerpilot.domain.usecases.DeleteRecordUseCase
 import com.example.aicareerpilot.domain.usecases.GetHistoryUseCase
+import com.example.aicareerpilot.domain.usecases.GetRemainingAttemptsUseCase
+import com.example.aicareerpilot.domain.usecases.IncrementUsageUseCase
 import com.example.aicareerpilot.util.DocumentHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +31,10 @@ class ResumeViewModel @Inject constructor(
     private val analyzeResumeUseCase: AnalyzeResumeUseCase,
     private val getHistoryUseCase: GetHistoryUseCase,
     private val deleteRecordUseCase: DeleteRecordUseCase,
-    private val documentHelper: DocumentHelper
+    private val documentHelper: DocumentHelper,
+    private val canAnalyzeUseCase: CanAnalyzeUseCase,
+    private val incrementUsageUseCase: IncrementUsageUseCase,
+    private val getRemainingAttemptsUseCase: GetRemainingAttemptsUseCase
 ) : ViewModel() {
 
     // 1. Single source of truth for the analysis workflow state
@@ -51,8 +57,33 @@ class ResumeViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+    // 4.keep track of attempts
+    private val _remainingAttempts =
+        MutableStateFlow(3)
 
-    // 4. Refactored processing with precise state transitions and error handling
+    val remainingAttempts: StateFlow<Int> =
+        _remainingAttempts.asStateFlow()
+
+    init {
+        loadRemainingAttempts()
+    }
+    private fun loadRemainingAttempts() {
+
+        viewModelScope.launch {
+
+            _remainingAttempts.value =
+                getRemainingAttemptsUseCase()
+        }
+    }
+
+    fun refreshRemainingAttempts() {
+        viewModelScope.launch {
+            _remainingAttempts.value =
+                getRemainingAttemptsUseCase()
+        }
+    }
+
+    // 5. Refactored processing with precise state transitions and error handling
     fun processResume(uri: Uri, fileName: String) {
         // Prevent launching a new process if we are already loading
         if (_uiState.value is ResumeUiState.Loading) return
@@ -74,6 +105,18 @@ class ResumeViewModel @Inject constructor(
 
                     return@launch
                 }
+
+                // Check daily limit
+                if (!canAnalyzeUseCase()) {
+
+                    _uiState.value =
+                        ResumeUiState.Error(
+                            "Daily limit reached. You can analyze only 3 resumes per day."
+                        )
+
+                    return@launch
+                }
+
                 // Step A: Extract text from PDF
                 val resumeText =
                     documentHelper.extractTextFromUri(
@@ -91,6 +134,12 @@ class ResumeViewModel @Inject constructor(
                     resumeText,
                     _jobDescription.value
                 )
+                // Increase today's count
+                incrementUsageUseCase()
+                //remaining attempts update
+                _remainingAttempts.value =
+                    getRemainingAttemptsUseCase()
+
                 // Step C: Push Success state
                 _uiState.value = ResumeUiState.Success(result)
 

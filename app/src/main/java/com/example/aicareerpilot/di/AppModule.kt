@@ -17,7 +17,10 @@ import com.example.aicareerpilot.domain.repository.AuthRepository
 import com.example.aicareerpilot.domain.repository.ResumeRepository
 import com.example.aicareerpilot.data.repository.FirebaseAuthRepository
 import com.example.aicareerpilot.data.repository.ResumeRepositoryImpl
+import com.example.aicareerpilot.data.repository.UsageRepositoryImpl
+import com.example.aicareerpilot.domain.repository.UsageRepository
 import com.example.aicareerpilot.util.DocumentHelper
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Binds
 
 
@@ -71,7 +74,9 @@ abstract class AppModule {
                 context,
                 AppDatabase::class.java,
                 "ai_career_pilot_db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
         }
 
         @Provides
@@ -79,6 +84,23 @@ abstract class AppModule {
             database: AppDatabase
         ): AnalysisDao {
             return database.analysisDao()
+        }
+        @Provides
+        @Singleton
+        fun provideFirestore(): FirebaseFirestore {
+            return FirebaseFirestore.getInstance()
+        }
+
+        @Provides
+        @Singleton
+        fun provideUsageRepository(
+            firestore: FirebaseFirestore,
+            auth: FirebaseAuth
+        ): UsageRepository {
+            return UsageRepositoryImpl(
+                firestore,
+                auth
+            )
         }
     }
 }

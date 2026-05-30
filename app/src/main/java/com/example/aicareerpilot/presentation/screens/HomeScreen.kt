@@ -67,6 +67,11 @@ fun HomeScreen(
     var showHelpDialog by remember { mutableStateOf(false) }
     // Derived state to determine if we should show loading spinning wheels
     val isLoading = uiState is ResumeUiState.Loading
+    val remainingAttempts by
+    viewModel.remainingAttempts.collectAsState()
+    val usedAttempts = remainingAttempts
+
+
 
     // 2. Handle side-effects for Success and Error states cleanly
     LaunchedEffect(uiState) {
@@ -187,6 +192,14 @@ fun HomeScreen(
                 ) {
                     item { Spacer(modifier = Modifier.height(20.dp)) }
                     item { JDCard(jd) { viewModel.updateJD(it) } }
+                    item{
+                        Text(
+                        text = "Remaining analyses today: $usedAttempts / 3",
+                        color = Color.LightGray,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    }
                     item { Spacer(modifier = Modifier.height(20.dp)) }
                     item {
                         UploadButtonPremium(isLoading) {

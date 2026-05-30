@@ -250,7 +250,8 @@ fun MainScreen(viewModel: ResumeViewModel) {
                 }
                 composable(Screen.SignIn.route) {
                     SignInScreen(
-                        navController
+                        resumeViewModel = viewModel,
+                        navController = navController
                     )
                 }
 
