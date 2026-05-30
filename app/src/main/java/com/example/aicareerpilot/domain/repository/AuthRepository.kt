@@ -6,8 +6,6 @@ interface AuthRepository {
 
     suspend fun googleLogin(idToken: String): Result<String>
 
-
-
     fun logout()
 
     fun isUserLoggedIn(): Boolean

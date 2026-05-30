@@ -505,7 +505,7 @@ fun UploadButtonPremium(
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Text(
-                        text = "Analyze Match Score",
+                        text = "Upload Resume for Analysis",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         style = TextStyle(

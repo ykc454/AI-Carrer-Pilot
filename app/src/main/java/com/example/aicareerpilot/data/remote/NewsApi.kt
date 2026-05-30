@@ -1,33 +1,24 @@
-package com.example.aicareerpilot.data.remote
+    package com.example.aicareerpilot.data.remote
+    import com.example.aicareerpilot.data.model.news.QuestionsResponse
+    import retrofit2.http.GET
+    import retrofit2.http.Query
 
-import com.example.aicareerpilot.data.model.news.NewsResponse
-import retrofit2.http.GET
-import retrofit2.http.Query
+    interface StackOverflowApi {
 
-interface NewsApi {
+        @GET("questions")
+        suspend fun getHotQuestions(
 
-    @GET("v2/everything")
-    suspend fun getJobNews(
+            @Query("order")
+            order: String = "desc",
 
-        @Query("q")
-        query: String =
-            "software engineering jobs OR AI hiring OR tech careers",
+            @Query("sort")
+            sort: String = "hot",
 
-        @Query("language")
-        language: String = "en",
+            @Query("site")
+            site: String = "stackoverflow",
 
-        @Query("sortBy")
-        sortBy: String = "publishedAt",
+            @Query("pagesize")
+            pageSize: Int = 50
 
-        @Query("pageSize")
-        pageSize: Int = 50,
-
-        @Query("apiKey")
-        apiKey: String
-
-    ): NewsResponse
-}
-
-
-
-
+        ): QuestionsResponse
+    }

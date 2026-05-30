@@ -535,5 +535,4 @@ $safeResumeText
         analysisDao.deleteRecord(record)
     }
 
-
 }

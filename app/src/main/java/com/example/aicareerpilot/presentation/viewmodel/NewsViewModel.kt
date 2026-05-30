@@ -1,63 +1,78 @@
-    package com.example.aicareerpilot.presentation.viewmodel
+package com.example.aicareerpilot.presentation.viewmodel
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.aicareerpilot.data.model.news.Question
+import com.example.aicareerpilot.data.repository.StackOverflowRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.inject.Inject
 
-    import androidx.lifecycle.ViewModel
-    import androidx.lifecycle.viewModelScope
-    import com.example.aicareerpilot.data.repository.NewsRepository
-    import dagger.hilt.android.lifecycle.HiltViewModel
-    import kotlinx.coroutines.flow.MutableStateFlow
-    import kotlinx.coroutines.flow.StateFlow
-    import kotlinx.coroutines.launch
-    import javax.inject.Inject
+sealed interface DiscussionUiState {
 
-    import com.example.aicareerpilot.data.model.news.NewsArticle
+    object Loading : DiscussionUiState
 
-    sealed interface NewsUiState {
+    data class Success(
+        val questions: List<Question>
+    ) : DiscussionUiState
 
-        object Loading : NewsUiState
+    data class Error(
+        val message: String
+    ) : DiscussionUiState
+}
 
-        data class Success(
-            val news: List<NewsArticle>
-        ) : NewsUiState
+@HiltViewModel
+class DiscussionViewModel @Inject constructor(
+    private val repository: StackOverflowRepository
+) : ViewModel() {
 
-        data class Error(
-            val message: String
-        ) : NewsUiState
+    private val _state =
+        MutableStateFlow<DiscussionUiState>(
+            DiscussionUiState.Loading
+        )
+
+    val state: StateFlow<DiscussionUiState> = _state
+
+    init {
+        loadQuestions()
     }
 
-    @HiltViewModel
-    class NewsViewModel @Inject constructor(
-        private val repository: NewsRepository
-    ) : ViewModel() {
+    private fun loadQuestions() {
 
-        private val _state =
-            MutableStateFlow<NewsUiState>(NewsUiState.Loading)
+        viewModelScope.launch {
 
-        val state: StateFlow<NewsUiState> = _state
+            try {
 
-        init {
-            loadNews()
-        }
+                val data = repository.getQuestions()
 
-        private fun loadNews() {
+                _state.value =
+                    DiscussionUiState.Success(data)
 
-            viewModelScope.launch {
+            } catch (e: UnknownHostException) {
 
-                try {
+                _state.value =
+                    DiscussionUiState.Error(
+                        "Turn on your internet connection to see developer trends."
+                    )
 
-                    val news = repository.getNews()
+            } catch (e: SocketTimeoutException) {
 
-                    _state.value =
-                        NewsUiState.Success(news)
+                _state.value =
+                    DiscussionUiState.Error(
+                        "Network timeout. Please check your connection and try again."
+                    )
 
-                } catch (e: Exception) {
+            } catch (e: Exception) {
 
-                    _state.value =
-                        NewsUiState.Error(
-                            e.message ?: "Unknown Error"
-                        )
-                }
+                _state.value =
+                    DiscussionUiState.Error(
+                        "Something went wrong. Please try again."
+                    )
             }
         }
     }
-
+}

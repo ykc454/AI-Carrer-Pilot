@@ -1,44 +1,29 @@
 package com.example.aicareerpilot.di
 
-import com.example.aicareerpilot.BuildConfig
-import com.example.aicareerpilot.data.remote.NewsApi
+import com.example.aicareerpilot.data.remote.StackOverflowApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
+import kotlin.jvm.java
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NewsModule {
+object StackOverflowModule {
 
     @Provides
     @Singleton
-    fun provideNewsApi(): NewsApi {
-
-        val logging = HttpLoggingInterceptor()
-        logging.setLevel(
-            if (BuildConfig.DEBUG)
-                HttpLoggingInterceptor.Level.BODY
-            else
-                HttpLoggingInterceptor.Level.NONE
-        )
-
-        val client = OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .build()
+    fun provideApi(): StackOverflowApi {
 
         return Retrofit.Builder()
-            .baseUrl("https://newsapi.org/")
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl("https://api.stackexchange.com/2.3/")
+            .addConverterFactory(
+                GsonConverterFactory.create()
+            )
             .build()
-            .create(NewsApi::class.java)
+            .create(StackOverflowApi::class.java)
     }
 }
-
-

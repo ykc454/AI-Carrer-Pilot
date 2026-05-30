@@ -1,5 +1,6 @@
 package com.example.aicareerpilot.presentation.screens
 
+import DeveloperTrendsScreen
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -14,11 +15,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,10 +44,10 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object History : Screen("history", Icons.Default.History, "History")
     object Profile : Screen("profile", Icons.Default.Person, "Profile")
 
-    object JobMarket : Screen(
-        "job_market",
-        Icons.Default.Work,
-        "Market"
+    object DeveloperTrends : Screen(
+        "developer_trends",
+        Icons.AutoMirrored.Filled.TrendingUp,
+        "Trends"
     )
     object SignIn : Screen(
         "sign_in",
@@ -78,8 +79,8 @@ fun MainScreen(viewModel: ResumeViewModel) {
         Screen.History.route ->
             "Track your previous AI resume analyses"
 
-        Screen.JobMarket.route ->
-            "Explore current hiring and market trends"
+        Screen.DeveloperTrends.route ->
+            "Explore trending technologies and developer discussions"
 
         Screen.Profile.route ->
             "Manage your account and app preferences"
@@ -93,7 +94,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
     val screens = listOf(
         Screen.Home,
         Screen.History,
-        Screen.JobMarket,
+        Screen.DeveloperTrends,
         Screen.Profile
     )
     val deviceType = getDeviceType()
@@ -266,8 +267,8 @@ fun MainScreen(viewModel: ResumeViewModel) {
                     )
                 }
 
-                composable(Screen.JobMarket.route) {
-                    JobMarketScreen()
+                composable(Screen.DeveloperTrends.route) {
+                    DeveloperTrendsScreen()
                 }
 
                 composable(Screen.Profile.route) {

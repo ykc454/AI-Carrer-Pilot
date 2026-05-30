@@ -159,5 +159,5 @@ dependencies {
     // Needed for Android compatibility
     implementation("org.apache.xmlbeans:xmlbeans:5.1.1")
 
-
+    implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
 }
