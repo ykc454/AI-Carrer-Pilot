@@ -49,6 +49,10 @@ class ResumeViewModel @Inject constructor(
         _jobDescription.value = newJD
     }
 
+    fun clearSessionData() {
+        _jobDescription.value = ""
+    }
+
     // 3. Observe historical records from the database
     val analysisHistory: StateFlow<List<AnalysisRecord>> =
         getHistoryUseCase()

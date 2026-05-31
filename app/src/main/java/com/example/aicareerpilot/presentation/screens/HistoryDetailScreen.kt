@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -40,15 +39,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.mikepenz.markdown.m3.Markdown
-import java.util.Locale.getDefault
 import androidx.compose.ui.platform.LocalLocale
 
 @Composable
 fun HistoryDetailScreen(
     recordId: Int?,
-    viewModel: ResumeViewModel
+    resumeViewModel: ResumeViewModel
 ) {
-    val history by viewModel.analysisHistory.collectAsState()
+    val history by resumeViewModel.analysisHistory.collectAsState()
 
     val record = remember(history, recordId) {
         history.find { it.id == recordId }

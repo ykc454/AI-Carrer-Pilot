@@ -4,6 +4,7 @@ import DeveloperTrendsScreen
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
@@ -24,6 +30,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,10 +76,15 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: ResumeViewModel) {
+fun MainScreen(resumeViewModel: ResumeViewModel) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Home.route
+    val remainingAttempts by
+    resumeViewModel.remainingAttempts.collectAsState()
+    var showCreditDialog by remember {
+        mutableStateOf(false)
+    }
     val screenSubtitle = when (currentRoute) {
 
         Screen.Home.route ->
@@ -139,18 +153,67 @@ fun MainScreen(viewModel: ResumeViewModel) {
             topBar = {
                 if (showBars) {
                 LargeTopAppBar(
-
                     title = {
                         Column {
-                            Text(
-                                text = "AI Career Pilot",
-                                style = if (deviceType == DeviceType.TABLET)
-                                    MaterialTheme.typography.displayMedium
-                                else
-                                    MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                Text(
+                                    text = "AI Career Pilot",
+                                    style = if (deviceType == DeviceType.TABLET)
+                                        MaterialTheme.typography.displayMedium
+                                    else
+                                        MaterialTheme.typography.displaySmall,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.White
+                                )
+
+                                Spacer(Modifier.width(28.dp))
+
+                                Surface(
+                                    onClick = {
+                                        showCreditDialog = true
+                                    },
+                                    shape = CircleShape,
+                                    color = Color.White.copy(alpha = 0.08f),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        Color.White.copy(alpha = 0.15f)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(
+                                            horizontal = 8.dp,
+                                            vertical = 4.dp
+                                        ),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.size(30.dp),
+
+                                        ) {
+                                            CircularProgressIndicator(
+                                                progress = { remainingAttempts / 3f },
+                                                modifier = Modifier.fillMaxSize(),
+                                                strokeWidth = 2.dp,
+                                                color = Color.White,
+                                                trackColor = Color.White.copy(alpha = 0.15f),
+                                            )
+
+                                            Text(
+                                                text = remainingAttempts.toString(),
+                                                color = Color.White,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
 
                             Spacer(Modifier.height(6.dp))
 
@@ -238,7 +301,7 @@ fun MainScreen(viewModel: ResumeViewModel) {
             ) {
                 composable(Screen.Home.route) {
                     HomeScreen(
-                        viewModel = viewModel,
+                        resumeViewModel = resumeViewModel,
                         onRecordClick = { record ->
                             navController.navigate(
                                 Screen.HistoryDetail.createRoute(record.id)
@@ -250,14 +313,14 @@ fun MainScreen(viewModel: ResumeViewModel) {
                 }
                 composable(Screen.SignIn.route) {
                     SignInScreen(
-                        resumeViewModel = viewModel,
+                        resumeViewModel = resumeViewModel,
                         navController = navController
                     )
                 }
 
                 composable(Screen.History.route) {
                     HistoryScreen(
-                        viewModel,
+                        resumeViewModel,
                         onRecordClick = { record ->
                             navController.navigate(
                                 Screen.HistoryDetail.createRoute(record.id)
@@ -269,11 +332,11 @@ fun MainScreen(viewModel: ResumeViewModel) {
                 }
 
                 composable(Screen.DeveloperTrends.route) {
-                    DeveloperTrendsScreen()
+                    DeveloperTrendsScreen(resumeViewModel)
                 }
 
                 composable(Screen.Profile.route) {
-                    ProfileScreen(navController)
+                    ProfileScreen(resumeViewModel,navController)
                 }
 
                 composable("history_detail/{recordId}") { backStackEntry ->
@@ -282,11 +345,17 @@ fun MainScreen(viewModel: ResumeViewModel) {
                     // Fast path: Just pass the ID. The NavHost layout stays completely lightweight.
                     HistoryDetailScreen(
                         recordId = recordId,
-                        viewModel = viewModel
+                        resumeViewModel = resumeViewModel
                     )
                 }
             }
         }
+    }
+    if (showCreditDialog) {
+        CreditInfoDialog(
+            remainingAttempts = remainingAttempts,
+            onDismiss = { showCreditDialog = false }
+        )
     }
 }
 

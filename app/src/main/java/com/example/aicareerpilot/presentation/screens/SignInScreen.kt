@@ -1,5 +1,6 @@
 package com.example.aicareerpilot.presentation.screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.widget.Toast
@@ -33,6 +34,7 @@ import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import kotlin.math.PI
 import kotlin.math.sin
 
+@SuppressLint("ContextCastToActivity")
 @Composable
 fun SignInScreen(resumeViewModel: ResumeViewModel,
     navController: NavHostController

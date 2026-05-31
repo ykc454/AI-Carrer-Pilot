@@ -55,21 +55,20 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: ResumeViewModel,
+    resumeViewModel: ResumeViewModel,
     onRecordClick: (AnalysisRecord) -> Unit
 ) {
     val context = LocalContext.current
 
     // 1. Observe your true single source of truth from ViewModel
-    val uiState by viewModel.uiState.collectAsState()
-    val history by viewModel.analysisHistory.collectAsState()
-    val jd by viewModel.jobDescription.collectAsState()
+    val uiState by resumeViewModel.uiState.collectAsState()
+    val history by resumeViewModel.analysisHistory.collectAsState()
+    val jd by resumeViewModel.jobDescription.collectAsState()
     var showHelpDialog by remember { mutableStateOf(false) }
     // Derived state to determine if we should show loading spinning wheels
     val isLoading = uiState is ResumeUiState.Loading
-    val remainingAttempts by
-    viewModel.remainingAttempts.collectAsState()
-    val usedAttempts = remainingAttempts
+
+
 
 
 
@@ -90,12 +89,12 @@ fun HomeScreen(
                     onRecordClick(newestRecord)
                 }
 
-                viewModel.resetUiState()
+                resumeViewModel.resetUiState()
             }
             is ResumeUiState.Error -> {
                 val errorMessage = (uiState as ResumeUiState.Error).message
                 Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                viewModel.resetUiState()
+                resumeViewModel.resetUiState()
             }
             else -> {}
         }
@@ -109,7 +108,7 @@ fun HomeScreen(
 
             val fileName = getFileName(context, it)
 
-            viewModel.processResume(
+            resumeViewModel.processResume(
                 it,
                 fileName
             )
@@ -151,7 +150,7 @@ fun HomeScreen(
                         .padding(end = 24.dp)
                 ) {
                     Spacer(Modifier.height(24.dp))
-                    JDCard(jd) { viewModel.updateJD(it) }
+                    JDCard(jd) { resumeViewModel.updateJD(it) }
                 }
 
                 // RIGHT SIDE
@@ -176,7 +175,7 @@ fun HomeScreen(
                         HistoryCard(
                             record = record,
                             onClick = { onRecordClick(record) },
-                            viewModel = viewModel
+                            viewModel = resumeViewModel
                         )
                     }
                 }
@@ -191,15 +190,8 @@ fun HomeScreen(
                     contentPadding = PaddingValues(top = 20.dp, bottom = 80.dp)
                 ) {
                     item { Spacer(modifier = Modifier.height(20.dp)) }
-                    item { JDCard(jd) { viewModel.updateJD(it) } }
-                    item{
-                        Text(
-                        text = "Remaining analyses today: $usedAttempts / 3",
-                        color = Color.LightGray,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                    }
+                    item { JDCard(jd) { resumeViewModel.updateJD(it) } }
+
                     item { Spacer(modifier = Modifier.height(20.dp)) }
                     item {
                         UploadButtonPremium(isLoading) {
@@ -235,7 +227,7 @@ fun HomeScreen(
                             HistoryCard(
                                 record = latest,
                                 onClick = { onRecordClick(latest) },
-                                viewModel = viewModel
+                                viewModel = resumeViewModel
                             )
                         } else {
                             Text(
@@ -570,4 +562,54 @@ fun SectionHeader(
             )
         }
     }
+}
+
+@Composable
+fun CreditInfoDialog(
+    remainingAttempts: Int,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF121212),
+
+        title = {
+            Text(
+                text = "Daily Credits",
+                color = Color.White
+            )
+        },
+
+        text = {
+            Column {
+                Text(
+                    text = "You receive 3 resume analyses every day.",
+                    color = Color.LightGray
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "• 1 analysis = 1 credit",
+                    color = Color.LightGray
+                )
+
+                Text(
+                    text = "• Credits reset automatically every day",
+                    color = Color.LightGray
+                )
+
+                Text(
+                    text = "• Remaining today: $remainingAttempts / 3",
+                    color = Color.White
+                )
+            }
+        },
+
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Got it")
+            }
+        }
+    )
 }

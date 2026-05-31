@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.aicareerpilot.presentation.viewmodel.AuthViewModel
+import com.example.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 private val BackgroundColor = Color(0xFF000000)
@@ -47,7 +48,7 @@ private val PrimaryWhite = Color(0xFFF5F5F5)
 private val SecondaryText = Color(0xFF9E9E9E)
 
 @Composable
-fun ProfileScreen(navController: NavHostController) {
+fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostController) {
 
     val context = LocalContext.current
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -320,7 +321,7 @@ fun ProfileScreen(navController: NavHostController) {
                     onClick = {
 
                         showLogoutDialog = false
-
+                        resumeViewModel.clearSessionData()
                         authViewModel.logout()
 
                         navController.navigate(Screen.SignIn.route) {

@@ -56,10 +56,10 @@ import java.util.Locale
 
 @Composable
 fun HistoryScreen(
-    viewModel: ResumeViewModel,
+    resumeViewModel: ResumeViewModel,
     onRecordClick: (AnalysisRecord) -> Unit // Added callback for navigation
 ) {
-    val history by viewModel.analysisHistory.collectAsState()
+    val history by resumeViewModel.analysisHistory.collectAsState()
     val deviceType = getDeviceType()
     val isTablet = deviceType == DeviceType.TABLET
 
@@ -103,7 +103,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(history) { record ->
-                    HistoryCard(record = record, onClick = { onRecordClick(record) }, viewModel = viewModel)
+                    HistoryCard(record = record, onClick = { onRecordClick(record) }, viewModel = resumeViewModel)
                 }
             }
         } else {
@@ -124,7 +124,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(history) { record ->
-                    HistoryCard(record = record, onClick = { onRecordClick(record) }, viewModel = viewModel)
+                    HistoryCard(record = record, onClick = { onRecordClick(record) }, viewModel = resumeViewModel)
                 }
             }
         }
