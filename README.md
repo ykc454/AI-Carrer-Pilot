@@ -8,7 +8,7 @@ AI Career Pilot is an Android application built using **Kotlin, Jetpack Compose,
 
 The app helps users analyze their resumes against a Job Description (JD) using Google's Gemini AI. Users can upload or paste resume and job description content, receive detailed ATS-style analysis, identify skill gaps, improve resume quality, and track previous analyses.
 
-In addition to resume analysis, the application provides insights into current software industry trends by integrating with the Stack Overflow API and News APIs. This enables users to stay updated with in-demand technologies, programming languages, frameworks, and industry developments.
+In addition to resume analysis, the application provides insights into current software industry trends by integrating with the Stack Overflow API. This enables users to stay updated with in-demand technologies, programming languages, frameworks, and industry developments.
 
 The application follows a scalable Clean Architecture approach, ensuring maintainability, testability, and separation of concerns.
 
@@ -149,6 +149,5 @@ com.example.aicareerpilot
 * Firebase Authentication
 * Gemini AI
 * Stack Overflow API
-* News API
 
 ---
