@@ -19,7 +19,7 @@ The application follows a scalable Clean Architecture approach, ensuring maintai
 <p align="center">
   <img src="https://github.com/user-attachments/assets/7c9f8ec6-01db-4992-83d8-7af6833ab113" width="250"/>
   <img src="https://github.com/user-attachments/assets/fe9db0ee-59d5-499f-9edb-403ca63474f1" width="250"/>
-  <img src="https://github.com/user-attachments/assets/b3ccaa3f-e8be-4010-bdbe-490015eb23f1" width="250"/>
+  <img width="720" height="1600" alt="detail screen" src="https://github.com/user-attachments/assets/64245233-7f81-4137-a8c3-7a1ffede52d8" />
 </p>
 
 ---
