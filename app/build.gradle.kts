@@ -58,7 +58,13 @@ android {
         }
 
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
 
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             buildConfigField(
                 "String",
                 "GEMINI_API_KEY",
@@ -161,4 +167,8 @@ dependencies {
     implementation("org.apache.xmlbeans:xmlbeans:5.1.1")
 
     implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("io.mockk:mockk:1.13.11")
 }

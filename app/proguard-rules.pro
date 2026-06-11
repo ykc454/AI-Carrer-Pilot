@@ -19,3 +19,29 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+
+-keep class com.google.gson.** { *; }
+
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Room
+-keep class androidx.room.** { *; }
+
+# Retrofit
+-keepattributes RuntimeVisibleAnnotations
+-keepattributes RuntimeVisibleParameterAnnotations
+
+# Coroutines
+-keep class kotlinx.coroutines.** { *; }
+
+# Firebase
+-keep class com.google.firebase.** { *; }
+
+# Hilt
+-keep class dagger.hilt.** { *; }
