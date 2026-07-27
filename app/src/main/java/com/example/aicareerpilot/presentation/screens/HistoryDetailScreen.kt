@@ -51,7 +51,6 @@ fun HistoryDetailScreen(
     val record = remember(history, recordId) {
         history.find { it.id == recordId }
     }
-
     if (record == null) {
         Box(
             modifier = Modifier
@@ -109,9 +108,7 @@ fun HistoryDetailScreen(
                         color = colorScheme.primary,
                         style = MaterialTheme.typography.labelLarge
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
+                    Spacer(modifier = Modifier.height(8.1.dp))
                     Text(
                         text = record.fileName,
                         color = Color.White,
