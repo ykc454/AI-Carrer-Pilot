@@ -18,11 +18,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 android {
-    namespace = "com.example.aicareerpilot"
+    namespace = "com.nextgendevs.aicareerpilot"
     compileSdk = 36 // Standard for 2026
 
     defaultConfig {
-        applicationId = "com.example.aicareerpilot"
+        applicationId = "com.nextgendevs.aicareerpilot"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
