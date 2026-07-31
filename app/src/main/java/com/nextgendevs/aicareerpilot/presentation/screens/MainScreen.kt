@@ -61,6 +61,11 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
         Icons.AutoMirrored.Filled.Login,
         "Sign In"
     )
+    object SignUp : Screen(
+        "sign_up",
+        Icons.AutoMirrored.Filled.Login,
+        "Sign Up"
+    )
     object HistoryDetail : Screen(
         route = "history_detail/{recordId}",
         icon = Icons.Default.Description,
@@ -113,7 +118,8 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val authViewModel: AuthViewModel = hiltViewModel()
     val isLoggedIn = authViewModel.isLoggedIn.collectAsState()
-    val showBars = currentRoute != Screen.SignIn.route
+    val showBars = currentRoute != Screen.SignIn.route &&
+            currentRoute != Screen.SignUp.route
 
     val startDestination =
         if (isLoggedIn.value)
@@ -335,6 +341,10 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
 
                 composable(Screen.Profile.route) {
                     ProfileScreen(resumeViewModel,navController)
+                }
+
+                composable(Screen.SignUp.route) {
+                    SignUpScreen(navController)
                 }
 
                 composable("history_detail/{recordId}") { backStackEntry ->

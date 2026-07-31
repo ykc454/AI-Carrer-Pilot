@@ -3,22 +3,19 @@ package com.nextgendevs.aicareerpilot.presentation.screens
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
+
 import android.widget.Toast
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -30,9 +27,17 @@ import androidx.navigation.NavHostController
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.AuthUiState
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.AuthViewModel
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeViewModel
-import kotlin.math.PI
-import kotlin.math.sin
 import com.nextgendevs.aicareerpilot.R
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import com.nextgendevs.aicareerpilot.presentation.theme.primarycolor
+import com.nextgendevs.aicareerpilot.presentation.theme.secondarycolor
+import com.nextgendevs.aicareerpilot.presentation.theme.tertiarycolor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @SuppressLint("ContextCastToActivity")
 @Composable
@@ -43,46 +48,23 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
     val context = LocalContext.current
     val uiState by authViewModel.uiState.collectAsState()
     val isLoading = uiState is AuthUiState.Loading
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
-    // 1. Core Animation Setup
-    val infiniteTransition = rememberInfiniteTransition(label = "SignInAnimations")
-    val activity = LocalContext.current as Activity
+    val activity = LocalContext.current as? Activity
 
     DisposableEffect(Unit) {
-
-        // Lock portrait while SignInScreen is visible
-        activity.requestedOrientation =
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         onDispose {
-
-            // Restore normal rotation after leaving screen
-            activity.requestedOrientation =
-                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 
-    // Smooth scanning loop (2.5 seconds per loop)
-    val scanOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 280f, // Adjusted to cover full vertical padding bounds
-        animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "ScanOffset"
-    )
 
-    // Ambient background pulsing pulse
-    val bgGlowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.05f,
-        targetValue = 0.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = SineCrossingEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "BgGlow"
-    )
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -90,7 +72,10 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                 resumeViewModel.refreshRemainingAttempts()
                 Toast.makeText(context, "Google Login Success", Toast.LENGTH_SHORT).show()
                 navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.SignIn.route) { inclusive = true }
+                    popUpTo(0) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
                 }
                 authViewModel.resetState()
             }
@@ -109,20 +94,6 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
             .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
-        // Ambient background blob
-        Box(
-            modifier = Modifier
-                .size(400.dp)
-                .blur(100.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF00E5FF).copy(alpha = bgGlowAlpha),
-                            Color.Transparent
-                        )
-                    )
-                )
-        )
 
         Column(
             modifier = Modifier
@@ -149,89 +120,120 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                 fontSize = 15.sp,
                 letterSpacing = 0.5.sp
             )
+            Spacer(modifier = Modifier.height(90.dp))
 
-            Spacer(modifier = Modifier.height(48.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it
+                    scope.launch {
+                        delay(30)
+                        scrollState.animateScrollTo(scrollState.maxValue)
+                    }},
+                label = { Text("Email") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = secondarycolor,
+                    unfocusedLabelColor = Color.Gray,
+                    focusedLabelColor = primarycolor,
+                    focusedContainerColor = tertiarycolor,
+                    unfocusedContainerColor = tertiarycolor,
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Animated Resume Preview Card
-            Box(
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it
+                },
+                label = { Text("Password") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = secondarycolor,
+                    focusedLabelColor = primarycolor,
+                    focusedContainerColor = tertiarycolor,
+                    unfocusedContainerColor = tertiarycolor,
+                    unfocusedLabelColor = Color.Gray
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            OutlinedButton(
+                onClick = {
+
+                    authViewModel.loginWithEmail(
+                        email.trim(),
+                        password
+                    )
+
+                },
+                enabled = !isLoading,
+
                 modifier = Modifier
-                    .width(260.dp)
-                    .height(320.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF141414))
-                    .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(24.dp))
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+                    .height(50.dp),
+
+                shape = RoundedCornerShape(16.dp),
+
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = if (isLoading)
+                        Color(0xFF111111)
+                    else
+                        Color.Black,
+
+                    disabledContainerColor = Color(0xFF111111),
+                    disabledContentColor = Color.White
+                ),
+
+                border = BorderStroke(
+                    1.dp,
+                    if (isLoading)
+                        Color(0xFFFFFFFF)
+                    else
+                        Color.White.copy(alpha = 0.5f)
+                )
+
             ) {
-                // Layout Mockup Lines Inside Card
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    repeat(7) { index ->
-                        // Calculate approximate Y coordinate block to compare against scanner position
-                        val lineYPos = (index * 36) + 20
-                        val isHighlighted = scanOffset > lineYPos - 25 && scanOffset < lineYPos + 25
 
-                        // Animate line color dynamically based on laser tracking
-                        val lineColor by animateColorAsState(
-                            targetValue = if (isHighlighted) Color(0xFF00E5FF) else Color(0xFF2C2C2C),
-                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                            label = "LineColor-$index"
-                        )
+                if (isLoading) {
 
-                        Box(
-                            modifier = Modifier
-                                .height(10.dp)
-                                .fillMaxWidth(fraction = if (index % 3 == 0) 0.6f else if (index % 2 == 0) 0.9f else 0.75f)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(lineColor)
-                        )
-                    }
-                }
-
-                // 3. Upgraded Laser & Glow Stack
-                Box(
-                    modifier = Modifier
-                        .offset(y = scanOffset.dp)
-                        .fillMaxWidth()
-                ) {
-                    // Soft laser back-glow trailing behind line
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(28.dp)
-                            .offset(y = (-12).dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color(0xFF00E5FF).copy(alpha = 0.25f),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = Color.White
                     )
 
-                    // Razor crisp core glowing line
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(3.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFF00E5FF).copy(alpha = 0.2f),
-                                        Color(0xFF00E5FF),
-                                        Color(0xFF00E5FF).copy(alpha = 0.2f)
-                                    )
-                                )
-                            )
-                    )
+                } else {
+
+                    Text("Login")
+
                 }
+
             }
 
-            Spacer(modifier = Modifier.height(54.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                "OR",
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Action Button
             OutlinedButton(
@@ -245,8 +247,8 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(56.dp),
+                    .padding(horizontal = 8.dp)
+                    .height(50.dp),
 
                 shape = RoundedCornerShape(16.dp),
 
@@ -310,11 +312,24 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+
+                onClick = {
+
+                    navController.navigate(Screen.SignUp.route)
+
+                }
+
+            ) {
+
+                Text(
+                    "Create Account",
+                    color = Color.White
+                )
+
+            }
         }
     }
-}
-
-// Custom Easing Helper to simulate organic scanning transitions
-val SineCrossingEasing = Easing { fraction ->
-            ((sin((fraction * PI) - (PI / 2)) + 1) / 2).toFloat()
 }

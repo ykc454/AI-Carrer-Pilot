@@ -151,6 +151,59 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+    fun loginWithEmail(
+        email: String,
+        password: String
+    ) {
+
+        if (_uiState.value is AuthUiState.Loading) return
+
+        viewModelScope.launch {
+
+            _uiState.value = AuthUiState.Loading
+
+            val result = authRepository.loginWithEmail(email, password)
+
+            result.onSuccess {
+                _uiState.value = AuthUiState.Success
+                _isLoggedIn.value = true
+            }
+
+            result.onFailure {
+                _uiState.value =
+                    AuthUiState.Error(
+                        it.message ?: "Login Failed"
+                    )
+            }
+        }
+    }
+
+    fun registerWithEmail(
+        email: String,
+        password: String
+    ) {
+
+        if (_uiState.value is AuthUiState.Loading) return
+
+        viewModelScope.launch {
+
+            _uiState.value = AuthUiState.Loading
+
+            val result = authRepository.registerWithEmail(email, password)
+
+            result.onSuccess {
+                _uiState.value = AuthUiState.Success
+                _isLoggedIn.value = true
+            }
+
+            result.onFailure {
+                _uiState.value =
+                    AuthUiState.Error(
+                        it.message ?: "Registration Failed"
+                    )
+            }
+        }
+    }
 
     fun logout() {
         authRepository.logout()
