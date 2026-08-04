@@ -344,7 +344,7 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                 }
 
                 composable(Screen.SignUp.route) {
-                    SignUpScreen(navController)
+                    SignUpScreen(authViewModel = authViewModel, navController = navController)
                 }
 
                 composable("history_detail/{recordId}") { backStackEntry ->

@@ -55,14 +55,14 @@ import com.nextgendevs.aicareerpilot.presentation.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun SignUpScreen(navController: NavHostController) {
+fun SignUpScreen(navController: NavHostController,authViewModel: AuthViewModel) {
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val authViewModel: AuthViewModel = hiltViewModel()
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val uiState by authViewModel.uiState.collectAsState()

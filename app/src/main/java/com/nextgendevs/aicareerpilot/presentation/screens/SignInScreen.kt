@@ -296,7 +296,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                     } else {
 
                         Image(
-                            painter = painterResource(R.drawable.google_logo_new),
+                            painter = painterResource(R.drawable.google_logo),
                             contentDescription = null,
                             modifier = Modifier.size(22.dp)
                         )

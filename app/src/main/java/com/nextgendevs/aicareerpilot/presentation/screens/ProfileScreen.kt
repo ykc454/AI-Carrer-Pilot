@@ -267,7 +267,7 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Version 1.0.0",
+            text = "Version 1.0.2",
             color = SecondaryText,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.align(Alignment.CenterHorizontally)
