@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import com.nextgendevs.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeUiState
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeViewModel
+import com.nextgendevs.aicareerpilot.util.getFileName
 import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +65,7 @@ fun HomeScreen(
     val uiState by resumeViewModel.uiState.collectAsState()
     val history by resumeViewModel.analysisHistory.collectAsState()
     val jd by resumeViewModel.jobDescription.collectAsState()
+    val sharedResume by resumeViewModel.sharedResume.collectAsState()
     var showHelpDialog by remember { mutableStateOf(false) }
     // Derived state to determine if we should show loading spinning wheels
     val isLoading = uiState is ResumeUiState.Loading
@@ -150,6 +152,15 @@ fun HomeScreen(
                         .padding(end = 24.dp)
                 ) {
                     Spacer(Modifier.height(24.dp))
+                    sharedResume?.let { shared ->
+                        SharedResumeCard(
+                            fileName = shared.fileName,
+                            canAnalyze = jd.isNotBlank() && !isLoading,
+                            onAnalyze = { resumeViewModel.analyzeSharedResume() },
+                            onCancel = { resumeViewModel.dismissSharedResume() }
+                        )
+                        Spacer(Modifier.height(16.dp))
+                    }
                     JDCard(jd) { resumeViewModel.updateJD(it) }
                 }
 
@@ -190,6 +201,17 @@ fun HomeScreen(
                     contentPadding = PaddingValues(top = 20.dp, bottom = 80.dp)
                 ) {
                     item { Spacer(modifier = Modifier.height(20.dp)) }
+                    sharedResume?.let { shared ->
+                        item {
+                            SharedResumeCard(
+                                fileName = shared.fileName,
+                                canAnalyze = jd.isNotBlank() && !isLoading,
+                                onAnalyze = { resumeViewModel.analyzeSharedResume() },
+                                onCancel = { resumeViewModel.dismissSharedResume() }
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                    }
                     item { JDCard(jd) { resumeViewModel.updateJD(it) } }
 
                     item { Spacer(modifier = Modifier.height(20.dp)) }
@@ -251,30 +273,60 @@ fun HomeScreen(
         )
     }
 }
-fun getFileName(context: Context, uri: Uri): String {
 
-    var name = "Unknown"
-
-    val cursor = context.contentResolver.query(
-        uri,
-        null,
-        null,
-        null,
-        null
-    )
-
-    cursor?.use {
-
-        val index =
-            it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-
-        if (it.moveToFirst() && index != -1) {
-            name = it.getString(index)
+// Shown when a resume was shared into the app from another app
+@Composable
+fun SharedResumeCard(
+    fileName: String,
+    canAnalyze: Boolean,
+    onAnalyze: () -> Unit,
+    onCancel: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.08f)
+        )
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = "📄 Resume received",
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = fileName,
+                color = Color.White.copy(alpha = 0.7f)
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Paste the job description below, then tap Analyze.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White.copy(alpha = 0.6f)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onCancel) {
+                    Text("Cancel", color = Color.White.copy(alpha = 0.7f))
+                }
+                Button(
+                    onClick = onAnalyze,
+                    enabled = canAnalyze,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    )
+                ) {
+                    Text("Analyze")
+                }
+            }
         }
     }
-
-    return name
 }
+
 @Composable
 fun HelpDialog(
     onDismiss: () -> Unit

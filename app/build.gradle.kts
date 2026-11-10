@@ -25,8 +25,8 @@ android {
         applicationId = "com.nextgendevs.aicareerpilot"
         minSdk = 26
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.0.8"
+        versionCode = 10
+        versionName = "1.0.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -158,13 +158,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-
-    // DOCX/DOC Support
-    implementation("org.apache.poi:poi:5.2.5")
-    implementation("org.apache.poi:poi-ooxml:5.2.5")
-
-    // Needed for Android compatibility
-    implementation("org.apache.xmlbeans:xmlbeans:5.1.1")
 
     implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
 

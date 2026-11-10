@@ -3,3 +3,6 @@
 .kotlin/
 *.log
 app/google-services.json
+
+# Android release builds
+app/release/

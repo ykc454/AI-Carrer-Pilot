@@ -26,6 +26,9 @@ sealed interface ResumeUiState {
     data class Success(val analysisResult: String) : ResumeUiState
     data class Error(val message: String) : ResumeUiState
 }
+// A resume file that another app shared into ours (via the Share sheet)
+data class SharedResume(val uri: Uri, val fileName: String)
+
 @HiltViewModel
 class ResumeViewModel @Inject constructor(
     private val analyzeResumeUseCase: AnalyzeResumeUseCase,
@@ -51,6 +54,24 @@ class ResumeViewModel @Inject constructor(
 
     fun clearSessionData() {
         _jobDescription.value = ""
+    }
+
+    // Resume received from another app. null = nothing shared.
+    private val _sharedResume = MutableStateFlow<SharedResume?>(null)
+    val sharedResume: StateFlow<SharedResume?> = _sharedResume.asStateFlow()
+
+    fun onResumeShared(uri: Uri, fileName: String) {
+        _sharedResume.value = SharedResume(uri, fileName)
+    }
+
+    fun analyzeSharedResume() {
+        val shared = _sharedResume.value ?: return
+        processResume(shared.uri, shared.fileName)
+        _sharedResume.value = null
+    }
+
+    fun dismissSharedResume() {
+        _sharedResume.value = null
     }
 
     // 3. Observe historical records from the database
