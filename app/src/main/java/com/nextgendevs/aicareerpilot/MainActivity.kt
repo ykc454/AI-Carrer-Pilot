@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
-        //Edge-to-edge layout (modern Android UI)
+        //Edge-to-edge layout
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         //Status bar color = match your black UI

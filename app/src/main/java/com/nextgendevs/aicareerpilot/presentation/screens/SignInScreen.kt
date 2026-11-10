@@ -6,7 +6,6 @@ import android.content.pm.ActivityInfo
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,7 +25,6 @@ import androidx.navigation.NavHostController
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.AuthUiState
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.AuthViewModel
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeViewModel
-import com.nextgendevs.aicareerpilot.R
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
@@ -70,7 +67,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
         when (uiState) {
             is AuthUiState.Success -> {
                 resumeViewModel.refreshRemainingAttempts()
-                Toast.makeText(context, "Google Login Success", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Login Success", Toast.LENGTH_SHORT).show()
                 navController.navigate(Screen.Home.route) {
                     popUpTo(0) {
                         inclusive = true
@@ -228,90 +225,90 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                "OR",
-                color = Color.Gray
-            )
+//            Text(
+//                "OR",
+//                color = Color.Gray
+//            )
+//
+//            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Action Button
-            OutlinedButton(
-                onClick = {
-                    if (!isLoading) {
-                        authViewModel.signInWithGoogle(context)
-                    }
-                },
-
-                enabled = !isLoading,
-
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-                    .height(50.dp),
-
-                shape = RoundedCornerShape(16.dp),
-
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (isLoading)
-                        Color(0xFF111111)
-                    else
-                        Color.Black,
-
-                    disabledContainerColor = Color(0xFF111111),
-                    disabledContentColor = Color.White
-                ),
-
-                border = BorderStroke(
-                    1.dp,
-                    if (isLoading)
-                        Color(0xFFFFFFFF)
-                    else
-                        Color.White.copy(alpha = 0.5f)
-                )
-            ) {
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-
-                    if (isLoading) {
-
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                            color = Color(0xFFFFFFFF)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            text = "Signing in...",
-                            fontSize = 16.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                    } else {
-
-                        Image(
-                            painter = painterResource(R.drawable.google_logo),
-                            contentDescription = null,
-                            modifier = Modifier.size(22.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            text = "Continue with Google",
-                            fontSize = 16.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
+//            // Action Button
+//            OutlinedButton(
+//                onClick = {
+//                    if (!isLoading) {
+//                        authViewModel.signInWithGoogle(context)
+//                    }
+//                },
+//
+//                enabled = !isLoading,
+//
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 8.dp)
+//                    .height(50.dp),
+//
+//                shape = RoundedCornerShape(16.dp),
+//
+//                colors = ButtonDefaults.outlinedButtonColors(
+//                    containerColor = if (isLoading)
+//                        Color(0xFF111111)
+//                    else
+//                        Color.Black,
+//
+//                    disabledContainerColor = Color(0xFF111111),
+//                    disabledContentColor = Color.White
+//                ),
+//
+//                border = BorderStroke(
+//                    1.dp,
+//                    if (isLoading)
+//                        Color(0xFFFFFFFF)
+//                    else
+//                        Color.White.copy(alpha = 0.5f)
+//                )
+//            ) {
+//
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//
+//                    if (isLoading) {
+//
+//                        CircularProgressIndicator(
+//                            modifier = Modifier.size(20.dp),
+//                            strokeWidth = 2.dp,
+//                            color = Color(0xFFFFFFFF)
+//                        )
+//
+//                        Spacer(modifier = Modifier.width(12.dp))
+//
+//                        Text(
+//                            text = "Signing in...",
+//                            fontSize = 16.sp,
+//                            color = Color.White,
+//                            fontWeight = FontWeight.Medium
+//                        )
+//
+//                    } else {
+//
+//                        Image(
+//                            painter = painterResource(R.drawable.google_logo),
+//                            contentDescription = null,
+//                            modifier = Modifier.size(22.dp)
+//                        )
+//
+//                        Spacer(modifier = Modifier.width(12.dp))
+//
+//                        Text(
+//                            text = "Continue with Google",
+//                            fontSize = 16.sp,
+//                            color = Color.White,
+//                            fontWeight = FontWeight.Medium
+//                        )
+//                    }
+//                }
+//            }
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
