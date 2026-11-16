@@ -124,6 +124,10 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+    // Background sync (WorkManager + Hilt-injected workers)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // Gemini AI
 //    implementation(libs.google.ai.client)

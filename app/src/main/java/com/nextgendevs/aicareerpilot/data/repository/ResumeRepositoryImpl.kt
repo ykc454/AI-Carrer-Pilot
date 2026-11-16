@@ -3,6 +3,7 @@ package com.nextgendevs.aicareerpilot.data.repository
 import com.nextgendevs.aicareerpilot.data.local.AnalysisDao
 import com.nextgendevs.aicareerpilot.data.model.gemini_response.AnalysisRecord
 import com.nextgendevs.aicareerpilot.domain.repository.ResumeRepository
+import com.nextgendevs.aicareerpilot.domain.repository.SyncRepository
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -10,7 +11,8 @@ import javax.inject.Inject
 
 class ResumeRepositoryImpl @Inject constructor(
     private val generativeModel: GenerativeModel,
-    private val analysisDao: AnalysisDao
+    private val analysisDao: AnalysisDao,
+    private val syncRepository: SyncRepository
 ): ResumeRepository {
     override suspend fun analyzeWithJD(
         fileName: String,
@@ -130,6 +132,7 @@ $safeResumeText
             )
 
             analysisDao.insertRecord(record)
+            syncRepository.requestSync() // offline-first: saved locally, pushed when online
 
             aiFeedback
 
@@ -197,6 +200,7 @@ $safeResumeText
             )
 
             analysisDao.insertRecord(record)
+            syncRepository.requestSync() // offline-first: saved locally, pushed when online
 
             offlineFeedback
         }
@@ -533,8 +537,10 @@ $safeResumeText
         return analysisDao.getAllRecords()
     }
 
-     override suspend fun deleteRecord(record : AnalysisRecord){
-        analysisDao.deleteRecord(record)
+    override suspend fun deleteRecord(record: AnalysisRecord) {
+        // Soft delete: hidden from UI now, removed from the cloud by the sync worker.
+        analysisDao.markDeleted(record.remoteId)
+        syncRepository.requestSync()
     }
 
 }

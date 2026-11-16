@@ -22,6 +22,10 @@ import com.nextgendevs.aicareerpilot.domain.repository.UsageRepository
 import com.nextgendevs.aicareerpilot.util.DocumentHelper
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Binds
+import androidx.work.WorkManager
+import com.nextgendevs.aicareerpilot.data.local.QuestionDao
+import com.nextgendevs.aicareerpilot.data.repository.SyncRepositoryImpl
+import com.nextgendevs.aicareerpilot.domain.repository.SyncRepository
 
 
 @Module
@@ -39,6 +43,12 @@ abstract class AppModule {
     abstract fun bindAuthRepository(
         impl: FirebaseAuthRepository
     ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSyncRepository(
+        impl: SyncRepositoryImpl
+    ): SyncRepository
 
     companion object {
 
@@ -75,6 +85,8 @@ abstract class AppModule {
                 AppDatabase::class.java,
                 "ai_career_pilot_db"
             )
+                // Preserve users' history across the v2 -> v3 schema change.
+                .addMigrations(AppDatabase.MIGRATION_2_3)
                 .fallbackToDestructiveMigration()
                 .build()
         }
@@ -84,6 +96,21 @@ abstract class AppModule {
             database: AppDatabase
         ): AnalysisDao {
             return database.analysisDao()
+        }
+
+        @Provides
+        fun provideQuestionDao(
+            database: AppDatabase
+        ): QuestionDao {
+            return database.questionDao()
+        }
+
+        @Provides
+        @Singleton
+        fun provideWorkManager(
+            @ApplicationContext context: Context
+        ): WorkManager {
+            return WorkManager.getInstance(context)
         }
         @Provides
         @Singleton

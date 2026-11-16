@@ -80,14 +80,23 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                         color = Color.White,
                         style = MaterialTheme.typography.bodyLarge
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = { viewModel.refresh() }
+                    ) {
+                        Text("Retry")
+                    }
                 }
             }
         }
 
         is DiscussionUiState.Success -> {
 
+            val success = state as DiscussionUiState.Success
             val questions =
-                (state as DiscussionUiState.Success)
+                success
                     .questions
                     .sortedByDescending { it.viewCount }
                     .take(50)
@@ -97,6 +106,26 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
+
+                success.offlineMessage?.let { message ->
+                    item {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF3F3F46),
+                            onClick = { viewModel.refresh() }
+                        ) {
+                            Text(
+                                text = "$message  Tap to retry",
+                                modifier = Modifier.padding(12.dp),
+                                color = Color.White,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+                    }
+                }
 
                 items(questions) { question ->
 

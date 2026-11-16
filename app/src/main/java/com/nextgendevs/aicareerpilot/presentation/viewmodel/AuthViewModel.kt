@@ -2,6 +2,7 @@ package com.nextgendevs.aicareerpilot.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nextgendevs.aicareerpilot.domain.repository.AuthRepository
+import com.nextgendevs.aicareerpilot.domain.repository.SyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,8 @@ private const val TAG = "GoogleLogin"
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val syncRepository: SyncRepository
 ) : ViewModel() {
 
     private val _uiState =
@@ -156,6 +158,8 @@ class AuthViewModel @Inject constructor(
             result.onSuccess {
                 _uiState.value = AuthUiState.Success
                 _isLoggedIn.value = true
+                // Restore this user's cloud history onto the device.
+                syncRepository.requestSync()
             }
 
             result.onFailure {
@@ -183,6 +187,8 @@ class AuthViewModel @Inject constructor(
             result.onSuccess {
                 _uiState.value = AuthUiState.Success
                 _isLoggedIn.value = true
+                // Restore this user's cloud history onto the device.
+                syncRepository.requestSync()
             }
 
             result.onFailure {
@@ -195,8 +201,12 @@ class AuthViewModel @Inject constructor(
     }
 
     fun logout() {
-        authRepository.logout()
-        _isLoggedIn.value = false
+        viewModelScope.launch {
+            // Don't leak one user's history to the next account on this device.
+            syncRepository.clearLocalData()
+            authRepository.logout()
+            _isLoggedIn.value = false
+        }
     }
 
 

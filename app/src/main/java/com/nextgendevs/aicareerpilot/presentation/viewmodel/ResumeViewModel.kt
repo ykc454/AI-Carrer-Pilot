@@ -10,6 +10,9 @@ import com.nextgendevs.aicareerpilot.domain.usecases.DeleteRecordUseCase
 import com.nextgendevs.aicareerpilot.domain.usecases.GetHistoryUseCase
 import com.nextgendevs.aicareerpilot.domain.usecases.GetRemainingAttemptsUseCase
 import com.nextgendevs.aicareerpilot.domain.usecases.IncrementUsageUseCase
+import com.nextgendevs.aicareerpilot.domain.usecases.ObserveSyncStateUseCase
+import com.nextgendevs.aicareerpilot.domain.usecases.SyncHistoryUseCase
+import com.nextgendevs.aicareerpilot.domain.repository.SyncState
 import com.nextgendevs.aicareerpilot.util.DocumentHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +40,23 @@ class ResumeViewModel @Inject constructor(
     private val documentHelper: DocumentHelper,
     private val canAnalyzeUseCase: CanAnalyzeUseCase,
     private val incrementUsageUseCase: IncrementUsageUseCase,
-    private val getRemainingAttemptsUseCase: GetRemainingAttemptsUseCase
+    private val getRemainingAttemptsUseCase: GetRemainingAttemptsUseCase,
+    observeSyncStateUseCase: ObserveSyncStateUseCase,
+    private val syncHistoryUseCase: SyncHistoryUseCase
 ) : ViewModel() {
+
+    /** Cloud backup status of the analysis history (offline-first sync). */
+    val syncState: StateFlow<SyncState> =
+        observeSyncStateUseCase()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = SyncState.Synced
+            )
+
+    /** Manual "sync now" (e.g. pull-to-refresh on History). */
+    fun syncNow() = syncHistoryUseCase()
+
 
     // 1. Single source of truth for the analysis workflow state
     private val _uiState = MutableStateFlow<ResumeUiState>(ResumeUiState.Idle)

@@ -3,6 +3,7 @@ package com.nextgendevs.aicareerpilot.presentation.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nextgendevs.aicareerpilot.data.model.gemini_response.AnalysisRecord
+import com.nextgendevs.aicareerpilot.domain.repository.SyncState
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material3.CircularProgressIndicator
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.nextgendevs.aicareerpilot.util.DeviceType
 import com.nextgendevs.aicareerpilot.util.getDeviceType
@@ -60,6 +66,7 @@ fun HistoryScreen(
     onRecordClick: (AnalysisRecord) -> Unit // Added callback for navigation
 ) {
     val history by resumeViewModel.analysisHistory.collectAsState()
+    val syncState by resumeViewModel.syncState.collectAsState()
     val deviceType = getDeviceType()
     val isTablet = deviceType == DeviceType.TABLET
 
@@ -71,13 +78,16 @@ fun HistoryScreen(
         )
     )
 
+    Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    SyncStatusBar(state = syncState, onRetry = resumeViewModel::syncNow)
+    Box(modifier = Modifier.weight(1f)) {
     if (history.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "No history yet",
+                text = if (syncState is SyncState.Syncing) "Restoring your history…" else "No history yet",
                 color = Color.Gray,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -128,6 +138,52 @@ fun HistoryScreen(
                 }
             }
         }
+    }
+    }
+    }
+}
+
+/** Shows whether the analysis history is backed up to the cloud. */
+@Composable
+private fun SyncStatusBar(state: SyncState, onRetry: () -> Unit) {
+    val (label, tint) = when (state) {
+        SyncState.Synced -> "Backed up to cloud" to Color(0xFF4ADE80)
+        SyncState.Syncing -> "Syncing…" to Color(0xFF60A5FA)
+        is SyncState.Pending -> "${state.pendingCount} waiting to sync" to Color(0xFFFBBF24)
+        is SyncState.Failed -> "Sync failed · tap to retry" to Color(0xFFF87171)
+    }
+    val clickable = state is SyncState.Failed || state is SyncState.Pending
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White.copy(alpha = 0.05f))
+            .then(if (clickable) Modifier.clickable(onClick = onRetry) else Modifier)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (state is SyncState.Syncing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+                color = tint
+            )
+        } else {
+            Icon(
+                imageVector = when (state) {
+                    SyncState.Synced -> Icons.Filled.CloudDone
+                    is SyncState.Failed -> Icons.Filled.CloudOff
+                    else -> Icons.Filled.CloudUpload
+                },
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, color = tint, style = MaterialTheme.typography.labelLarge)
     }
 }
 
