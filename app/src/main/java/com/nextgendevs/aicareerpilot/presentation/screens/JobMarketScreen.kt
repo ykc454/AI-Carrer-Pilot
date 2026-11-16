@@ -1,4 +1,5 @@
 import android.content.Intent
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,7 +78,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
 
                     Text(
                         (state as DiscussionUiState.Error).message,
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         style = MaterialTheme.typography.bodyLarge
                     )
 
@@ -114,13 +115,13 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFF3F3F46),
+                            color = AppColors.Hairline,
                             onClick = { viewModel.refresh() }
                         ) {
                             Text(
                                 text = "$message  Tap to retry",
                                 modifier = Modifier.padding(12.dp),
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
@@ -145,12 +146,12 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                         shape = RoundedCornerShape(20.dp),
 
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.Black
+                            containerColor = AppColors.Background
                         ),
 
                         border = BorderStroke(
                             1.dp,
-                            Color.White.copy(alpha = 0.3f)
+                            AppColors.TextPrimary.copy(alpha = 0.3f)
                         ),
 
                         elevation = CardDefaults.cardElevation(
@@ -164,7 +165,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
 
                             Text(
                                 text = question.title,
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 lineHeight = 24.sp,
@@ -181,7 +182,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
 
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
-                                    color = Color.White.copy(alpha = 0.04f)
+                                    color = AppColors.TextPrimary.copy(alpha = 0.04f)
                                 ) {
                                     Text(
                                         text = "${question.viewCount} Views",
@@ -189,14 +190,14 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                                             horizontal = 10.dp,
                                             vertical = 6.dp
                                         ),
-                                        color = Color(0xFFA1A1AA),
+                                        color = AppColors.TextSecondary,
                                         style = MaterialTheme.typography.labelMedium
                                     )
                                 }
 
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
-                                    color = Color.White.copy(alpha = 0.04f)
+                                    color = AppColors.TextPrimary.copy(alpha = 0.04f)
                                 ) {
                                     Text(
                                         text = "${question.score} Score",
@@ -204,14 +205,14 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                                             horizontal = 10.dp,
                                             vertical = 6.dp
                                         ),
-                                        color = Color(0xFFA1A1AA),
+                                        color = AppColors.TextSecondary,
                                         style = MaterialTheme.typography.labelMedium
                                     )
                                 }
 
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
-                                    color = Color.White.copy(alpha = 0.04f)
+                                    color = AppColors.TextPrimary.copy(alpha = 0.04f)
                                 ) {
                                     Text(
                                         text = "${question.answerCount} Answers",
@@ -219,7 +220,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                                             horizontal = 10.dp,
                                             vertical = 6.dp
                                         ),
-                                        color = Color(0xFFA1A1AA),
+                                        color = AppColors.TextSecondary,
                                         style = MaterialTheme.typography.labelMedium
                                     )
                                 }
@@ -238,7 +239,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
 
                                     Surface(
                                         shape = RoundedCornerShape(8.dp),
-                                        color = Color.White.copy(alpha = 0.03f)
+                                        color = AppColors.TextPrimary.copy(alpha = 0.03f)
                                     ) {
                                         Text(
                                             text = tag,
@@ -246,7 +247,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                                                 horizontal = 10.dp,
                                                 vertical = 5.dp
                                             ),
-                                            color = Color(0xFFD4D4D8),
+                                            color = AppColors.TextPrimary,
                                             style = MaterialTheme.typography.labelSmall
                                         )
                                     }
@@ -258,7 +259,7 @@ fun DeveloperTrendsScreen(resumeViewModel: ResumeViewModel,
                             )
 
                             HorizontalDivider(
-                                color = Color.White.copy(alpha = 0.05f)
+                                color = AppColors.TextPrimary.copy(alpha = 0.05f)
                             )
 
                             Spacer(

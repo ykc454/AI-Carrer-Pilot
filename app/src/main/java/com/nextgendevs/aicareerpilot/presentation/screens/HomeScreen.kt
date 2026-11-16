@@ -1,5 +1,7 @@
 package com.nextgendevs.aicareerpilot.presentation.screens
 
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
+
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
@@ -29,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -102,6 +105,16 @@ fun HomeScreen(
         }
     }
 
+    // Camera scanner for paper resumes (CameraX + ML Kit OCR)
+    var showScanner by remember { mutableStateOf(false) }
+    val openScanner = {
+        if (jd.isBlank()) {
+            Toast.makeText(context, "Please paste job description", Toast.LENGTH_SHORT).show()
+        } else {
+            showScanner = true
+        }
+    }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -117,17 +130,20 @@ fun HomeScreen(
         }
     }
 
+    // Soft accent glow (captured here: drawBehind is not a composable scope)
+    val glow = AppColors.Accent.copy(alpha = if (AppColors.IsDark) 0.07f else 0.06f)
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Color.Black
+                AppColors.Background
             )
             .drawBehind {
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.08f),
+                            glow,
                             Color.Transparent
                         )
                     ),
@@ -178,6 +194,9 @@ fun HomeScreen(
                             )
                         )
                     }
+
+                    Spacer(Modifier.height(12.dp))
+                    ScanResumeButton(enabled = !isLoading) { openScanner() }
 
                     Spacer(Modifier.height(24.dp))
 
@@ -233,6 +252,8 @@ fun HomeScreen(
                             }
                         }
                     }
+                    item { Spacer(modifier = Modifier.height(12.dp)) }
+                    item { ScanResumeButton(enabled = !isLoading) { openScanner() } }
                     item { Spacer(modifier = Modifier.height(24.dp)) }
                     item {
                         SectionHeader(
@@ -254,7 +275,7 @@ fun HomeScreen(
                         } else {
                             Text(
                                 text = "No recent activity",
-                                color = Color.Gray,
+                                color = AppColors.TextSecondary,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center
                             )
@@ -264,6 +285,15 @@ fun HomeScreen(
 
             }
         }
+    }
+    if (showScanner) {
+        ResumeScannerScreen(
+            onScanComplete = { pagePaths ->
+                showScanner = false
+                resumeViewModel.processScannedResume(pagePaths)
+            },
+            onDismiss = { showScanner = false }
+        )
     }
     if (showHelpDialog) {
         HelpDialog(
@@ -286,38 +316,38 @@ fun SharedResumeCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.08f)
+            containerColor = AppColors.TextPrimary.copy(alpha = 0.08f)
         )
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
                 text = "📄 Resume received",
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = AppColors.TextPrimary
             )
             Text(
                 text = fileName,
-                color = Color.White.copy(alpha = 0.7f)
+                color = AppColors.TextPrimary.copy(alpha = 0.7f)
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = "Paste the job description below, then tap Analyze.",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.6f)
+                color = AppColors.TextPrimary.copy(alpha = 0.6f)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(onClick = onCancel) {
-                    Text("Cancel", color = Color.White.copy(alpha = 0.7f))
+                    Text("Cancel", color = AppColors.TextPrimary.copy(alpha = 0.7f))
                 }
                 Button(
                     onClick = onAnalyze,
                     enabled = canAnalyze,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
+                        containerColor = AppColors.TextPrimary,
+                        contentColor = AppColors.Background
                     )
                 ) {
                     Text("Analyze")
@@ -360,9 +390,9 @@ fun HelpDialog(
                 Text("5. View your recent analysis history anytime.")
             }
         },
-        containerColor = Color(0xFF1E1E1E),
-        titleContentColor = Color.White,
-        textContentColor = Color.LightGray
+        containerColor = AppColors.Surface,
+        titleContentColor = AppColors.TextPrimary,
+        textContentColor = AppColors.TextSecondary
     )
 }
 
@@ -371,7 +401,7 @@ fun JDCard(jd: String, onChange: (String) -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1A1A1A).copy(alpha = 0.7f)
+            containerColor = AppColors.Surface.copy(alpha = 0.7f)
         ),
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier.fillMaxWidth()
@@ -389,7 +419,7 @@ fun JDCard(jd: String, onChange: (String) -> Unit) {
             placeholder = {
                 Text(
                     "Paste Job Description...",
-                    color = Color.LightGray
+                    color = AppColors.TextSecondary
                 )
             },
 
@@ -405,7 +435,7 @@ fun JDCard(jd: String, onChange: (String) -> Unit) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Clear Text",
-                            tint = Color.White
+                            tint = AppColors.TextPrimary
                         )
                     }
                 }
@@ -420,12 +450,36 @@ fun JDCard(jd: String, onChange: (String) -> Unit) {
             ),
 
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedBorderColor = Color.White,
-                unfocusedBorderColor = Color.Gray
+                focusedTextColor = AppColors.TextPrimary,
+                unfocusedTextColor = AppColors.TextPrimary,
+                focusedBorderColor = AppColors.TextPrimary,
+                unfocusedBorderColor = AppColors.TextSecondary
             )
         )
+    }
+}
+
+@Composable
+fun ScanResumeButton(
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.TextPrimary.copy(alpha = 0.3f)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.TextPrimary)
+    ) {
+        Icon(
+            imageVector = androidx.compose.material.icons.Icons.Default.DocumentScanner,
+            contentDescription = null
+        )
+        Spacer(Modifier.width(8.dp))
+        Text("Scan paper resume")
     }
 }
 
@@ -453,11 +507,11 @@ fun UploadButtonPremium(
 
     // Google-inspired gradient colors
     val googleGradient = listOf(
-        Color(0xFF4285F4),
-        Color(0xFFEA4335),
-        Color(0xFFFBBC05),
-        Color(0xFF34A853),
-        Color(0xFF4285F4)
+        AppColors.Accent,
+        AppColors.AccentSoft,
+        AppColors.Accent.copy(alpha = 0.6f),
+        AppColors.AccentSoft,
+        AppColors.Accent
     )
 
     Box(
@@ -492,7 +546,7 @@ fun UploadButtonPremium(
                     Modifier
                         .border(
                             width = 1.dp,
-                            color = Color.White.copy(alpha = 0.3f),
+                            color = AppColors.TextPrimary.copy(alpha = 0.3f),
                             shape = RoundedCornerShape(18.dp)
                         )
                 }
@@ -501,7 +555,7 @@ fun UploadButtonPremium(
             .clip(RoundedCornerShape(18.dp))
 
             // Always white background
-            .background( Color.Black)
+            .background( AppColors.Background)
 
             .clickable(
                 enabled = !isLoading
@@ -535,7 +589,7 @@ fun UploadButtonPremium(
 
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         strokeWidth = 2.dp
                     )
 
@@ -543,7 +597,7 @@ fun UploadButtonPremium(
 
                     Text(
                         text = "AI is analyzing...",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.SemiBold,
                         style = TextStyle(
                             fontSize = 16.sp,
@@ -556,14 +610,14 @@ fun UploadButtonPremium(
                     Icon(
                         imageVector = Icons.Default.FileUpload,
                         contentDescription = "Upload",
-                        tint = Color.White
+                        tint = AppColors.TextPrimary
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Text(
                         text = "Upload Resume for Analysis",
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         fontWeight = FontWeight.Bold,
                         style = TextStyle(
                             fontSize = 16.sp,
@@ -592,7 +646,7 @@ fun SectionHeader(
             Icon(
                 Icons.Default.History,
                 contentDescription = null,
-                tint = Color.White
+                tint = AppColors.TextPrimary
             )
 
             Spacer(Modifier.width(8.dp))
@@ -600,7 +654,7 @@ fun SectionHeader(
             Text(
                 "Recent Activity",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White
+                color = AppColors.TextPrimary
             )
         }
 
@@ -610,7 +664,7 @@ fun SectionHeader(
             Icon(
                 Icons.Default.ErrorOutline,
                 contentDescription = "Help",
-                tint = Color.White
+                tint = AppColors.TextPrimary
             )
         }
     }
@@ -623,12 +677,12 @@ fun CreditInfoDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF121212),
+        containerColor = AppColors.Surface,
 
         title = {
             Text(
                 text = "Daily Credits",
-                color = Color.White
+                color = AppColors.TextPrimary
             )
         },
 
@@ -636,24 +690,24 @@ fun CreditInfoDialog(
             Column {
                 Text(
                     text = "You receive 3 resume analyses every day.",
-                    color = Color.LightGray
+                    color = AppColors.TextSecondary
                 )
 
                 Spacer(Modifier.height(12.dp))
 
                 Text(
                     text = "• 1 analysis = 1 credit",
-                    color = Color.LightGray
+                    color = AppColors.TextSecondary
                 )
 
                 Text(
                     text = "• Credits reset automatically every day",
-                    color = Color.LightGray
+                    color = AppColors.TextSecondary
                 )
 
                 Text(
                     text = "• Remaining today: $remainingAttempts / 3",
-                    color = Color.White
+                    color = AppColors.TextPrimary
                 )
             }
         },

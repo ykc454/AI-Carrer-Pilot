@@ -1,5 +1,7 @@
 package com.nextgendevs.aicareerpilot.presentation.screens
 
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
+
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -150,7 +152,7 @@ fun SignUpScreen(navController: NavHostController,authViewModel: AuthViewModel) 
                         focusedLabelColor = primarycolor,
                         focusedContainerColor = tertiarycolor,
                         unfocusedContainerColor = tertiarycolor,
-                        unfocusedLabelColor = Color.DarkGray
+                        unfocusedLabelColor = AppColors.TextMuted
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -172,7 +174,7 @@ fun SignUpScreen(navController: NavHostController,authViewModel: AuthViewModel) 
                         focusedLabelColor = primarycolor,
                         focusedContainerColor = tertiarycolor,
                         unfocusedContainerColor = tertiarycolor,
-                        unfocusedLabelColor = Color.DarkGray
+                        unfocusedLabelColor = AppColors.TextMuted
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -213,7 +215,7 @@ fun SignUpScreen(navController: NavHostController,authViewModel: AuthViewModel) 
                     navController.popBackStack()
                 }
                 ) {
-                    Text("Already have an account? Login",color = Color.DarkGray)
+                    Text("Already have an account? Login",color = AppColors.TextMuted)
                 }
             }
         }

@@ -1,5 +1,7 @@
 package com.nextgendevs.aicareerpilot.presentation.screens
 
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
+
 import DeveloperTrendsScreen
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -132,7 +134,7 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
         // 1. TABLET SIDE: Navigation Rail
         if (showBars && deviceType == DeviceType.TABLET) {
             NavigationRail(
-                containerColor = Color.Black,
+                containerColor = AppColors.Background,
                 header = { /* Optional: Add logo here */ }
             ) {
                 screens.forEach { screen ->
@@ -143,8 +145,8 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                         icon = { Icon(screen.icon, contentDescription = screen.label) },
                         label = { Text(screen.label) },
                         colors = NavigationRailItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            indicatorColor = Color.White.copy(alpha = 0.2f)
+                            selectedIconColor = AppColors.TextPrimary,
+                            indicatorColor = AppColors.TextPrimary.copy(alpha = 0.2f)
                         )
                     )
                 }
@@ -170,7 +172,7 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                                     else
                                         MaterialTheme.typography.displaySmall,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White
+                                    color = AppColors.TextPrimary
                                 )
 
                                 Spacer(Modifier.width(28.dp))
@@ -180,10 +182,10 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                                         showCreditDialog = true
                                     },
                                     shape = CircleShape,
-                                    color = Color.White.copy(alpha = 0.08f),
+                                    color = AppColors.TextPrimary.copy(alpha = 0.08f),
                                     border = BorderStroke(
                                         1.dp,
-                                        Color.White.copy(alpha = 0.15f)
+                                        AppColors.TextPrimary.copy(alpha = 0.15f)
                                     )
                                 ) {
                                     Row(
@@ -203,13 +205,13 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                                                 progress = { remainingAttempts / 3f },
                                                 modifier = Modifier.fillMaxSize(),
                                                 strokeWidth = 2.dp,
-                                                color = Color.White,
-                                                trackColor = Color.White.copy(alpha = 0.15f),
+                                                color = AppColors.TextPrimary,
+                                                trackColor = AppColors.TextPrimary.copy(alpha = 0.15f),
                                             )
 
                                             Text(
                                                 text = remainingAttempts.toString(),
-                                                color = Color.White,
+                                                color = AppColors.TextPrimary,
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -225,13 +227,13 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                                 text = screenSubtitle,
                                 Modifier.padding(bottom = 11.dp),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.White.copy(alpha = 0.7f)
+                                color = AppColors.TextPrimary.copy(alpha = 0.7f)
                             )
                         }
                     },
                     colors = TopAppBarDefaults.largeTopAppBarColors(
-                        containerColor = Color.Black,
-                        scrolledContainerColor = Color.Black
+                        containerColor = AppColors.Background,
+                        scrolledContainerColor = AppColors.Background
                     ),
                     scrollBehavior = scrollBehavior
                 )
@@ -240,7 +242,7 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
             bottomBar = {
                 if (showBars && deviceType == DeviceType.PHONE) {
                     NavigationBar(
-                        containerColor = Color.Black,
+                        containerColor = AppColors.Background,
                         tonalElevation = 0.dp,
                         modifier = Modifier
                             .navigationBarsPadding()
@@ -273,7 +275,7 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                                             imageVector = screen.icon,
                                             contentDescription = null,
                                             modifier = Modifier.graphicsLayer(scaleX = scale, scaleY = scale),
-                                            tint = if (isSelected) Color.White else Color.DarkGray
+                                            tint = if (isSelected) AppColors.TextPrimary else AppColors.TextMuted
                                         )
 
                                     }
@@ -282,7 +284,7 @@ fun MainScreen(resumeViewModel: ResumeViewModel) {
                                         Text(
                                             text = screen.label,
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = if (isSelected) Color.White else Color.DarkGray,
+                                            color = if (isSelected) AppColors.TextPrimary else AppColors.TextMuted,
                                             modifier = Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
                                         )
                                     }

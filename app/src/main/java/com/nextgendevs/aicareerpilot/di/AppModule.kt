@@ -50,6 +50,18 @@ abstract class AppModule {
         impl: SyncRepositoryImpl
     ): SyncRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindSettingsRepository(
+        impl: com.nextgendevs.aicareerpilot.data.repository.SettingsRepositoryImpl
+    ): com.nextgendevs.aicareerpilot.domain.repository.SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTextRecognitionRepository(
+        impl: com.nextgendevs.aicareerpilot.data.ocr.MlKitTextRecognitionRepository
+    ): com.nextgendevs.aicareerpilot.domain.repository.TextRecognitionRepository
+
     companion object {
 
         @Provides

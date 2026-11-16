@@ -1,5 +1,7 @@
 package com.nextgendevs.aicareerpilot.presentation.screens
 
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
+
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -88,7 +90,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(AppColors.Background),
         contentAlignment = Alignment.Center
     ) {
 
@@ -106,14 +108,14 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.5.sp
                 ),
-                color = Color.White
+                color = AppColors.TextPrimary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Smart AI Resume Analysis",
-                color = Color.Gray.copy(alpha = 0.8f),
+                color = AppColors.TextSecondary.copy(alpha = 0.8f),
                 fontSize = 15.sp,
                 letterSpacing = 0.5.sp
             )
@@ -135,7 +137,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                 ),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = secondarycolor,
-                    unfocusedLabelColor = Color.Gray,
+                    unfocusedLabelColor = AppColors.TextSecondary,
                     focusedLabelColor = primarycolor,
                     focusedContainerColor = tertiarycolor,
                     unfocusedContainerColor = tertiarycolor,
@@ -162,7 +164,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                     focusedLabelColor = primarycolor,
                     focusedContainerColor = tertiarycolor,
                     unfocusedContainerColor = tertiarycolor,
-                    unfocusedLabelColor = Color.Gray
+                    unfocusedLabelColor = AppColors.TextSecondary
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -189,20 +191,20 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = if (isLoading)
-                        Color(0xFF111111)
+                        AppColors.SurfaceHigh
                     else
-                        Color.Black,
+                        AppColors.Background,
 
-                    disabledContainerColor = Color(0xFF111111),
-                    disabledContentColor = Color.White
+                    disabledContainerColor = AppColors.SurfaceHigh,
+                    disabledContentColor = AppColors.TextPrimary
                 ),
 
                 border = BorderStroke(
                     1.dp,
                     if (isLoading)
-                        Color(0xFFFFFFFF)
+                        AppColors.TextPrimary
                     else
-                        Color.White.copy(alpha = 0.5f)
+                        AppColors.TextPrimary.copy(alpha = 0.5f)
                 )
 
             ) {
@@ -212,7 +214,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
-                        color = Color.White
+                        color = AppColors.TextPrimary
                     )
 
                 } else {
@@ -227,7 +229,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 
 //            Text(
 //                "OR",
-//                color = Color.Gray
+//                color = AppColors.TextSecondary
 //            )
 //
 //            Spacer(modifier = Modifier.height(16.dp))
@@ -251,20 +253,20 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 //
 //                colors = ButtonDefaults.outlinedButtonColors(
 //                    containerColor = if (isLoading)
-//                        Color(0xFF111111)
+//                        AppColors.SurfaceHigh
 //                    else
-//                        Color.Black,
+//                        AppColors.Background,
 //
-//                    disabledContainerColor = Color(0xFF111111),
-//                    disabledContentColor = Color.White
+//                    disabledContainerColor = AppColors.SurfaceHigh,
+//                    disabledContentColor = AppColors.TextPrimary
 //                ),
 //
 //                border = BorderStroke(
 //                    1.dp,
 //                    if (isLoading)
-//                        Color(0xFFFFFFFF)
+//                        AppColors.TextPrimary
 //                    else
-//                        Color.White.copy(alpha = 0.5f)
+//                        AppColors.TextPrimary.copy(alpha = 0.5f)
 //                )
 //            ) {
 //
@@ -278,7 +280,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 //                        CircularProgressIndicator(
 //                            modifier = Modifier.size(20.dp),
 //                            strokeWidth = 2.dp,
-//                            color = Color(0xFFFFFFFF)
+//                            color = AppColors.TextPrimary
 //                        )
 //
 //                        Spacer(modifier = Modifier.width(12.dp))
@@ -286,7 +288,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 //                        Text(
 //                            text = "Signing in...",
 //                            fontSize = 16.sp,
-//                            color = Color.White,
+//                            color = AppColors.TextPrimary,
 //                            fontWeight = FontWeight.Medium
 //                        )
 //
@@ -303,7 +305,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 //                        Text(
 //                            text = "Continue with Google",
 //                            fontSize = 16.sp,
-//                            color = Color.White,
+//                            color = AppColors.TextPrimary,
 //                            fontWeight = FontWeight.Medium
 //                        )
 //                    }
@@ -323,7 +325,7 @@ fun SignInScreen(resumeViewModel: ResumeViewModel,
 
                 Text(
                     "Create Account",
-                    color = Color.White
+                    color = AppColors.TextPrimary
                 )
 
             }

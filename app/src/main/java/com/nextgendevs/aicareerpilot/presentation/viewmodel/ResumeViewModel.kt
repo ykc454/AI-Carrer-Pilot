@@ -12,6 +12,7 @@ import com.nextgendevs.aicareerpilot.domain.usecases.GetRemainingAttemptsUseCase
 import com.nextgendevs.aicareerpilot.domain.usecases.IncrementUsageUseCase
 import com.nextgendevs.aicareerpilot.domain.usecases.ObserveSyncStateUseCase
 import com.nextgendevs.aicareerpilot.domain.usecases.SyncHistoryUseCase
+import com.nextgendevs.aicareerpilot.domain.usecases.ScanResumeUseCase
 import com.nextgendevs.aicareerpilot.domain.repository.SyncState
 import com.nextgendevs.aicareerpilot.util.DocumentHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,7 +43,8 @@ class ResumeViewModel @Inject constructor(
     private val incrementUsageUseCase: IncrementUsageUseCase,
     private val getRemainingAttemptsUseCase: GetRemainingAttemptsUseCase,
     observeSyncStateUseCase: ObserveSyncStateUseCase,
-    private val syncHistoryUseCase: SyncHistoryUseCase
+    private val syncHistoryUseCase: SyncHistoryUseCase,
+    private val scanResumeUseCase: ScanResumeUseCase
 ) : ViewModel() {
 
     /** Cloud backup status of the analysis history (offline-first sync). */
@@ -128,46 +130,74 @@ class ResumeViewModel @Inject constructor(
 
     // 5. Refactored processing with precise state transitions and error handling
     fun processResume(uri: Uri, fileName: String) {
-        // Prevent launching a new process if we are already loading
+        val supported =
+            fileName.endsWith(".pdf", true) ||
+                    fileName.endsWith(".docx", true)
+
+        if (!supported) {
+            _uiState.value = ResumeUiState.Error("Only PDF and DOCX files are supported.")
+            return
+        }
+
+        runAnalysis(
+            fileName = fileName,
+            emptyTextError = "Could not extract any readable text from the PDF."
+        ) {
+            documentHelper.extractTextFromUri(uri = uri, fileName = fileName)
+        }
+    }
+
+    /**
+     * Analyse a paper resume captured with the camera.
+     * [pagePaths] are the photos taken by the scanner, in page order.
+     * The photos are deleted once OCR is done (they are only temporary).
+     */
+    fun processScannedResume(pagePaths: List<String>) {
+        if (pagePaths.isEmpty()) return
+
+        val fileName = "Scanned resume (${pagePaths.size} page" +
+                (if (pagePaths.size > 1) "s)" else ")")
+
+        runAnalysis(
+            fileName = fileName,
+            emptyTextError = "No readable text found. Try better lighting and hold the camera steady."
+        ) {
+            try {
+                scanResumeUseCase(pagePaths)
+            } finally {
+                pagePaths.forEach { java.io.File(it).delete() }
+            }
+        }
+    }
+
+    /**
+     * Shared pipeline for every resume source (file, shared file, camera scan):
+     * daily-limit check -> extract text -> Gemini analysis -> usage count.
+     */
+    private fun runAnalysis(
+        fileName: String,
+        emptyTextError: String,
+        extractText: suspend () -> String
+    ) {
         if (_uiState.value is ResumeUiState.Loading) return
 
         viewModelScope.launch {
             _uiState.value = ResumeUiState.Loading
 
             try {
-                val supported =
-                    fileName.endsWith(".pdf", true) ||
-                            fileName.endsWith(".docx", true)
-
-                if (!supported) {
-
-                    _uiState.value =
-                        ResumeUiState.Error(
-                            "Only PDF and DOCX files are supported."
-                        )
-
-                    return@launch
-                }
-
                 // Check daily limit
                 if (!canAnalyzeUseCase()) {
-
                     _uiState.value =
                         ResumeUiState.Error(
                             "Daily limit reached. You can analyze only 3 resumes per day."
                         )
-
                     return@launch
                 }
 
-                // Step A: Extract text from PDF
-                val resumeText =
-                    documentHelper.extractTextFromUri(
-                        uri = uri,
-                        fileName = fileName
-                    )
+                // Step A: Extract text (PDF / DOCX / OCR)
+                val resumeText = extractText()
                 if (resumeText.isBlank()) {
-                    _uiState.value = ResumeUiState.Error("Could not extract any readable text from the PDF.")
+                    _uiState.value = ResumeUiState.Error(emptyTextError)
                     return@launch
                 }
 

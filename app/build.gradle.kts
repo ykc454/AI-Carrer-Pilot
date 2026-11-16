@@ -149,6 +149,14 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
+    // CameraX + ML Kit (scan a paper resume, on-device OCR)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.guava)
+    implementation(libs.mlkit.text.recognition)
+
     // Testing
     testImplementation(libs.junit)
 

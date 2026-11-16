@@ -12,15 +12,22 @@ import androidx.activity.viewModels
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.nextgendevs.aicareerpilot.presentation.screens.MainScreen
+import com.nextgendevs.aicareerpilot.presentation.screens.AnimatedSplashScreen
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeViewModel
+import com.nextgendevs.aicareerpilot.presentation.viewmodel.ThemeViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: ResumeViewModel by viewModels()
+    private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,9 +37,7 @@ class MainActivity : ComponentActivity() {
 
         //Status bar color = match your black UI
         enableEdgeToEdge()
-        //White icons on dark background
-        WindowInsetsControllerCompat(window, window.decorView)
-            .isAppearanceLightStatusBars = false
+        // Status bar icon colour is set by AICareerPilotTheme (light / dark mode)
 
         // Only on first launch. After rotation the ViewModel already has it.
         if (savedInstanceState == null) {
@@ -40,8 +45,15 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            AICareerPilotTheme {
-                MainScreen(viewModel)
+            val themeMode by themeViewModel.themeMode.collectAsState()
+            AICareerPilotTheme(themeMode = themeMode) {
+                // Animated splash only on a fresh launch (not after rotation)
+                var showSplash by rememberSaveable { mutableStateOf(savedInstanceState == null) }
+                if (showSplash) {
+                    AnimatedSplashScreen(onFinished = { showSplash = false })
+                } else {
+                    MainScreen(viewModel)
+                }
             }
         }
     }

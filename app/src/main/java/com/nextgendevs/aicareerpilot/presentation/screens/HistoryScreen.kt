@@ -1,5 +1,7 @@
 package com.nextgendevs.aicareerpilot.presentation.screens
 
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -72,13 +74,16 @@ fun HistoryScreen(
 
     val backgroundBrush = Brush.verticalGradient(
         listOf(
-            Color(0xFF000000),
-            Color(0xFF000000),
-            Color(0xFF111111)
+            AppColors.Background,
+            AppColors.Background,
+            AppColors.SurfaceHigh
         )
     )
+    // Soft accent glow (captured here: drawBehind is not a composable scope)
+    val glow = AppColors.Accent.copy(alpha = if (AppColors.IsDark) 0.07f else 0.06f)
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+
+    Column(modifier = Modifier.fillMaxSize().background(AppColors.Background)) {
     SyncStatusBar(state = syncState, onRetry = resumeViewModel::syncNow)
     Box(modifier = Modifier.weight(1f)) {
     if (history.isEmpty()) {
@@ -88,7 +93,7 @@ fun HistoryScreen(
         ) {
             Text(
                 text = if (syncState is SyncState.Syncing) "Restoring your history…" else "No history yet",
-                color = Color.Gray,
+                color = AppColors.TextSecondary,
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -102,7 +107,7 @@ fun HistoryScreen(
                     .drawBehind {
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf(Color.White.copy(alpha = 0.08f), Color.Transparent)
+                                colors = listOf(glow, Color.Transparent)
                             ),
                             radius = size.width * 0.8f,
                             center = Offset(size.width * 0.3f, size.height * 0.2f)
@@ -124,7 +129,7 @@ fun HistoryScreen(
                     .drawBehind {
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf(Color.White.copy(alpha = 0.08f), Color.Transparent)
+                                colors = listOf(glow, Color.Transparent)
                             ),
                             radius = size.width * 0.8f,
                             center = Offset(size.width * 0.3f, size.height * 0.2f)
@@ -147,10 +152,10 @@ fun HistoryScreen(
 @Composable
 private fun SyncStatusBar(state: SyncState, onRetry: () -> Unit) {
     val (label, tint) = when (state) {
-        SyncState.Synced -> "Backed up to cloud" to Color(0xFF4ADE80)
-        SyncState.Syncing -> "Syncing…" to Color(0xFF60A5FA)
-        is SyncState.Pending -> "${state.pendingCount} waiting to sync" to Color(0xFFFBBF24)
-        is SyncState.Failed -> "Sync failed · tap to retry" to Color(0xFFF87171)
+        SyncState.Synced -> "Backed up to cloud" to AppColors.Good
+        SyncState.Syncing -> "Syncing…" to AppColors.Accent
+        is SyncState.Pending -> "${state.pendingCount} waiting to sync" to AppColors.Warn
+        is SyncState.Failed -> "Sync failed · tap to retry" to AppColors.Bad
     }
     val clickable = state is SyncState.Failed || state is SyncState.Pending
 
@@ -159,7 +164,7 @@ private fun SyncStatusBar(state: SyncState, onRetry: () -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White.copy(alpha = 0.05f))
+            .background(AppColors.TextPrimary.copy(alpha = 0.05f))
             .then(if (clickable) Modifier.clickable(onClick = onRetry) else Modifier)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -196,9 +201,9 @@ fun HistoryCard(
     val colorScheme = MaterialTheme.colorScheme
     var showDeleteDialog by remember { mutableStateOf(false) }
     val scoreColor = when (record.resumeScore) {
-        in 0..49 -> Color(0xFFFF5A5F)
-        in 50..80 -> Color(0xFFFFB547)
-        else -> Color(0xFF32D583)
+        in 0..49 -> AppColors.Bad
+        in 50..80 -> AppColors.Warn
+        else -> AppColors.Good
     }
 
     Card(
@@ -207,7 +212,7 @@ fun HistoryCard(
             .padding(vertical = 4.dp), // Reduced padding slightly for clean list look
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Black
+            containerColor = AppColors.Background
         ),
         border = BorderStroke(
             1.dp,
@@ -251,10 +256,10 @@ fun HistoryCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF111111))
+                            .background(AppColors.SurfaceHigh)
                             .border(
                                 width = 1.dp,
-                                color = Color.White.copy(alpha = 0.06f),
+                                color = AppColors.TextPrimary.copy(alpha = 0.06f),
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -275,7 +280,7 @@ fun HistoryCard(
                             Text(
                                 text = "${record.resumeScore}%",
                                 style = MaterialTheme.typography.labelLarge,
-                                color = Color.White,
+                                color = AppColors.TextPrimary,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -312,7 +317,7 @@ fun HistoryCard(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete",
-                            tint = Color.Gray,
+                            tint = AppColors.TextSecondary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -377,8 +382,8 @@ fun DeleteDialog(
             }
         },
 
-        containerColor = Color(0xFF1E1E1E),
-        titleContentColor = Color.White,
-        textContentColor = Color.LightGray
+        containerColor = AppColors.Surface,
+        titleContentColor = AppColors.TextPrimary,
+        textContentColor = AppColors.TextSecondary
     )
 }

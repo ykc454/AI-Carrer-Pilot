@@ -4,7 +4,9 @@
 
 AI Career Pilot is an Android app that compares your resume with a job description using **Google Gemini AI**. It gives you an ATS-style match score, the skills you match and miss, and suggestions to improve your resume. Your analysis history works **offline first**: it is stored on the device in Room and backed up in the background to **Cloud Firestore**, so it follows your account to any device. The app also shows trending developer topics from the Stack Overflow API, and those work offline too.
 
-Built with **Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, WorkManager, Firebase Auth, Cloud Firestore, Retrofit and Gemini AI**.
+Built with **Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, WorkManager, Firebase Auth, Cloud Firestore, Retrofit, Gemini AI, CameraX and ML Kit**.
+
+You can also **scan a paper resume with the camera**: text is read on the device with ML Kit, so the photos never leave the phone.
 
 ---
 
@@ -37,6 +39,9 @@ Built with **Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Wor
    - [Splash screen, theme and animations](#10-splash-screen-theme-and-animations)
    - [Release build optimisation](#11-release-build-optimisation-r8)
    - [Testing](#12-testing)
+   - [Scan a paper resume](#13-scan-a-paper-resume-camerax--ml-kit-ocr)
+   - [Structured report UI](#14-structured-report-ui)
+   - [Light and dark mode](#15-light-and-dark-mode)
 4. [Database schema](#database-schema)
 5. [Firestore data model and security rules](#firestore-data-model-and-security-rules)
 6. [Project structure](#project-structure)
@@ -52,6 +57,7 @@ Built with **Kotlin, Jetpack Compose, Clean Architecture + MVVM, Hilt, Room, Wor
 | Email login / sign-up | Secure, per-user account | Firebase Auth |
 | Resume upload | Pick a **PDF or DOCX** from storage | Storage Access Framework, PDFBox, ZIP/XML parsing |
 | Share-to-app | Share a resume from Gmail, Drive, WhatsApp and similar apps straight into the app | `ACTION_SEND` intent filter |
+| Scan paper resume | Photograph one or more pages of a printed resume and analyse it | CameraX, ML Kit Text Recognition (on-device) |
 | AI analysis | Match score, matched skills, missing keywords, improvements, ATS tips, verdict | Gemini 2.5 Flash |
 | Hybrid scoring | Final score = 80% AI score + 20% keyword-density score | Custom keyword engine (~250 skills) |
 | Offline fallback | Still returns a keyword-based report when AI or the network fails | Error mapping in the repository |
@@ -251,6 +257,17 @@ The History screen shows this as a status bar, and shows "Restoring your history
 
 ### 10. Splash screen, theme and animations
 
+**Animated splash (`presentation/screens/AnimatedSplashScreen.kt`).** The system splash is made invisible: a transparent icon (`drawable/splash_empty.xml`) on a background colour set per theme (`values/` and `values-night/splash_colors.xml`). So the first thing users see is a Compose animation of about 2.8 seconds that tells the app's story:
+
+1. The app tile springs in.
+2. The resume outline draws itself (`PathMeasure.getSegment`).
+3. The avatar and text lines appear one by one.
+4. An AI scan line sweeps the page, and a magnifier pops in with a spring.
+5. The "AI Career Pilot" letters rise in one after another, the tagline fades in, and a thin progress bar fills.
+6. The screen zooms slightly and fades out into `MainScreen`.
+
+It follows the light or dark theme and plays only on a fresh launch (`rememberSaveable`).
+
 - **Android 12+ SplashScreen API** (`core-splashscreen`, `installSplashScreen()`) with a custom splash theme.
 - A **Material 3** dark theme with custom colour and typography (`presentation/theme`).
 - **Lottie** animations for a livelier loading and empty experience.
@@ -282,6 +299,76 @@ Tools: **JUnit4, MockK, kotlinx-coroutines-test**.
 ```bash
 ./gradlew testDebugUnitTest
 ```
+
+### 13. Scan a paper resume (CameraX + ML Kit OCR)
+
+Many people still carry a printed resume. The **Scan paper resume** button on Home opens a full-screen camera, lets the user capture one or more pages, reads the text **on the device**, and then runs the same Gemini analysis as a PDF upload.
+
+**Flow through the layers**
+
+```text
+HomeScreen ──▶ ResumeScannerScreen (CameraX)        presentation / UI
+                 │ page photos saved to cache/scans/
+                 ▼
+ResumeViewModel.processScannedResume(paths)         presentation / state
+                 │
+                 ▼
+ScanResumeUseCase                                   domain
+                 │
+                 ▼
+TextRecognitionRepository (interface)               domain
+                 ▲ @Binds in AppModule
+MlKitTextRecognitionRepository (ML Kit)             data
+                 │ text
+                 ▼
+same pipeline as uploads: daily limit ▶ Gemini ▶ Room history ▶ cloud sync
+```
+
+**How it is implemented**
+
+| Piece | File | What it does |
+|---|---|---|
+| Camera UI | `presentation/screens/ResumeScannerScreen.kt` | Runtime `CAMERA` permission with a rationale screen; `PreviewView` inside Compose via `AndroidView`; `Preview` + `ImageCapture` (`CAPTURE_MODE_MAXIMIZE_QUALITY` for sharper text) bound to the lifecycle with `ProcessCameraProvider` in a `DisposableEffect` (unbound on dispose); an A4-ratio guide frame; multi-page capture into `cacheDir/scans/`. Shown as a full-screen `Dialog`, so the navigation graph is unchanged. |
+| Domain contract | `domain/repository/TextRecognitionRepository.kt` | `suspend fun recognizeText(imagePaths: List<String>): String`. It uses only paths and strings, so the domain layer has no CameraX or ML Kit imports. |
+| Use case | `domain/usecases/ScanResumeUseCase.kt` | Calls the repository and trims the result. |
+| OCR implementation | `data/ocr/MlKitTextRecognitionRepository.kt` | ML Kit Latin text recognizer (bundled model, works **offline**). `InputImage.fromFilePath` respects EXIF rotation. The ML Kit `Task` is wrapped in `suspendCancellableCoroutine` and runs on `Dispatchers.Default`. Pages are joined in order, keeping ML Kit's top-to-bottom block order. |
+| DI | `di/AppModule.kt` | `@Binds` from `MlKitTextRecognitionRepository` to `TextRecognitionRepository`. |
+| ViewModel | `presentation/viewmodel/ResumeViewModel.kt` | `processScannedResume(paths)` and `processResume(uri, name)` both use one private `runAnalysis(...)` pipeline (limit check → extract text → Gemini → usage count). The temporary photos are deleted in a `finally` block once OCR finishes, and they are also deleted if the user closes the scanner. |
+
+**Privacy:** images stay on the device and are deleted after OCR. Only the recognised text is sent to Gemini, the same as with a PDF.
+
+**Permissions:** `android.permission.CAMERA`, plus `<uses-feature android:name="android.hardware.camera.any" android:required="false"/>`, so devices without a camera can still install the app.
+
+**Dependencies** (version catalog): `androidx.camera:camera-core / camera-camera2 / camera-lifecycle / camera-view` and `com.google.mlkit:text-recognition`.
+
+**Tips for good results:** use even lighting, keep the page flat, and fill the guide frame with one page per shot.
+
+### 14. Structured report UI
+
+Gemini answers in a fixed plain-text format (`MATCH_SCORE:`, `MATCH_SUMMARY:`, `MATCHED_SKILLS:`, `MISSING_KEYWORDS:`, `THINGS_TO_IMPROVE:`, `ATS_OPTIMIZATION_TIPS:`, `FINAL_VERDICT:`). Showing that text directly produced one hard-to-read block, so the report screen now parses it into real sections.
+
+- **`domain/model/AnalysisReport.kt`** holds the `AnalysisReport` data class and `AnalysisReportParser`, which is pure Kotlin with no Android code. The parser strips markdown (`#`, `**`), detects section headers, handles different bullet styles (`-`, `*`, `•`, `1.`), splits inline comma lists, and reads the keyword header and the offline `SYSTEM_STATUS` report. Covered by `AnalysisReportParserTest`.
+- **`HistoryDetailScreen.kt`** shows:
+  - a hero card with an animated ATS score ring, a "Strong / Fair / Needs work" pill, and AI-match and keyword stat tiles;
+  - a highlighted **final verdict** card;
+  - a **summary** as a bullet list;
+  - **skills** as chip groups: matched skills in sage, missing ones in coral;
+  - **improvements** as a numbered list;
+  - **ATS tips** as icon rows;
+  - an offline banner when only the keyword report was available.
+- If a record has no recognisable sections (very old data), the screen falls back to rendering the text as Markdown, so nothing is lost.
+- **Palette** (`theme/Color.kt` → `ReportColors`): graphite surfaces, one muted lavender accent, and desaturated status colours (sage, sand, coral). There are no neon colours, and spacing uses large radii (24–28 dp) with hairline borders.
+
+### 15. Light and dark mode
+
+Profile → **Appearance** lets the user pick **System / Light / Dark**. The choice is saved on the device and applied immediately.
+
+- **Palettes** (`theme/Color.kt`) use one `AppPalette` data class with two instances.
+  - `DarkPalette`: the original look, with a pure black background, `#111111` / `#1A1A1A` cards, white accent and grey secondary text.
+  - `LightPalette`: lavender-tinted off-white background, white cards, deep plum text and accent.
+  - Light mode uses desaturated status colours (sage / sand / coral) and no neon colours.
+- **Access:** the palette is provided through `LocalAppPalette` (a `CompositionLocal`), and screens read it with `AppColors.X`. No screen uses hard-coded black or white any more. `AICareerPilotTheme` also builds the matching Material 3 colour scheme, so dialogs, text fields and buttons follow the theme, and it switches the status and navigation bar icons between light and dark.
+- **Architecture:** `domain/model/ThemeMode`, `domain/repository/SettingsRepository`, `data/repository/SettingsRepositoryImpl` (SharedPreferences exposed as a `StateFlow`), and `presentation/viewmodel/ThemeViewModel`. `MainActivity` collects the mode and passes it to the theme.
 
 ---
 
@@ -354,6 +441,8 @@ com.nextgendevs.aicareerpilot
 │   │   ├── AnalysisDao.kt            # history queries + sync queries
 │   │   ├── AppDatabase.kt            # Room DB v3 + MIGRATION_2_3
 │   │   └── QuestionDao.kt            # trends cache entity, DAO, mappers
+│   ├── ocr
+│   │   └── MlKitTextRecognitionRepository.kt # on-device OCR (ML Kit)
 │   ├── model
 │   │   ├── gemini_response/          # AnalysisRecord entity + SyncStatus
 │   │   └── news/                     # Question, QuestionsResponse (Gson)
@@ -375,10 +464,13 @@ com.nextgendevs.aicareerpilot
 │   └── StackOverflowModule.kt        # Retrofit
 │
 ├── domain
+│   ├── model
+│   │   └── AnalysisReport.kt         # AnalysisReport + AnalysisReportParser (unit-tested)
 │   ├── repository
 │   │   ├── AuthRepository.kt
 │   │   ├── ResumeRepository.kt
 │   │   ├── SyncRepository.kt         # + SyncState
+│   │   ├── TextRecognitionRepository.kt # OCR contract
 │   │   └── UsageRepository.kt
 │   └── usecases
 │       ├── AnalyzeResumeUseCase.kt
@@ -388,14 +480,16 @@ com.nextgendevs.aicareerpilot
 │       ├── GetRemainingAttemptsUseCase.kt
 │       ├── IncrementUsageUseCase.kt
 │       ├── ObserveSyncStateUseCase.kt
+│       ├── ScanResumeUseCase.kt
 │       └── SyncHistoryUseCase.kt
 │
 ├── presentation
 │   ├── screens
 │   │   ├── MainScreen.kt             # NavHost + bottom navigation
 │   │   ├── HomeScreen.kt             # JD input, upload, results, limits
+│   │   ├── ResumeScannerScreen.kt    # CameraX multi-page scanner
 │   │   ├── HistoryScreen.kt          # list/grid + sync status bar
-│   │   ├── HistoryDetailScreen.kt    # Markdown report
+│   │   ├── HistoryDetailScreen.kt    # structured premium report
 │   │   ├── JobMarketScreen.kt        # developer trends + offline banner
 │   │   ├── ProfileScreen.kt          # account + logout
 │   │   ├── SignInScreen.kt
@@ -428,7 +522,8 @@ com.nextgendevs.aicareerpilot
 | Local storage | Room (Flow, migrations, transactions), SharedPreferences |
 | Background work | WorkManager (constraints, backoff, unique/periodic work) |
 | Cloud | Firebase Authentication, Cloud Firestore |
-| AI | Google Gemini (`generativeai` SDK, `gemini-2.5-flash`) |
+| AI | Google Gemini (`generativeai` SDK, `gemini-2.5-flash`), ML Kit Text Recognition (on-device OCR) |
+| Camera | CameraX (`Preview`, `ImageCapture`, `PreviewView`, lifecycle binding) |
 | Networking | Retrofit, Gson, OkHttp |
 | Documents | PDFBox-Android, custom DOCX (ZIP + XML) parser |
 | Build | Gradle KTS, version catalog, KSP, R8 minify + resource shrinking |

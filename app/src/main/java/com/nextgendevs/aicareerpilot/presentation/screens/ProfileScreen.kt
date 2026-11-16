@@ -1,5 +1,14 @@
 package com.nextgendevs.aicareerpilot.presentation.screens
 
+import com.nextgendevs.aicareerpilot.presentation.theme.AppColors
+import com.nextgendevs.aicareerpilot.domain.model.ThemeMode
+import com.nextgendevs.aicareerpilot.presentation.viewmodel.ThemeViewModel
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
@@ -29,6 +38,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -41,11 +51,16 @@ import com.nextgendevs.aicareerpilot.presentation.viewmodel.AuthViewModel
 import com.nextgendevs.aicareerpilot.presentation.viewmodel.ResumeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-private val BackgroundColor = Color(0xFF000000)
-private val CardColor = Color(0xFF000000)
-private val BorderColor = Color(0xFFFFFFFF)
-private val PrimaryWhite = Color(0xFFF5F5F5)
-private val SecondaryText = Color(0xFF9E9E9E)
+private val BackgroundColor: Color @Composable get() = AppColors.Background
+private val CardColor: Color @Composable get() = AppColors.Background
+private val BorderColor: Color @Composable get() =
+    if (AppColors.IsDark) AppColors.TextPrimary.copy(alpha = 0.08f) else AppColors.Hairline
+
+/** Same card recipe as the Home "Recent activity" card: surface fading to background. */
+private val CardBrush: Brush
+    @Composable get() = Brush.verticalGradient(listOf(AppColors.Surface, AppColors.Background))
+private val PrimaryWhite: Color @Composable get() = AppColors.TextPrimary
+private val SecondaryText: Color @Composable get() = AppColors.TextSecondary
 
 @Composable
 fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostController) {
@@ -84,7 +99,7 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
             shape = RoundedCornerShape(28.dp),
             border = BorderStroke(
                 width = 1.dp,
-                color = Color(0xFF5E5E5E)
+                color = BorderColor
             ),
             colors = CardDefaults.cardColors(
                 containerColor = CardColor
@@ -94,6 +109,7 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(CardBrush)
                     .padding(vertical = 30.dp, horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -104,13 +120,13 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
                     modifier = Modifier
                         .size(92.dp)
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(AppColors.TextPrimary),
                     contentAlignment = Alignment.Center
                 ) {
 
                     Text(
                         text = initials,
-                        color = Color.Black,
+                        color = AppColors.Background,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -137,7 +153,7 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
 
                 Surface(
                     shape = RoundedCornerShape(100.dp),
-                    color = Color.White.copy(alpha = 0.06f)
+                    color = AppColors.TextPrimary.copy(alpha = 0.06f)
                 ) {
 
                     Text(
@@ -146,7 +162,7 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
                             horizontal = 18.dp,
                             vertical = 10.dp
                         ),
-                        color = Color.White,
+                        color = AppColors.TextPrimary,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -168,6 +184,16 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
 
 
         // ACTIONS
+
+        ProfileSectionTitle(title = "Appearance")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val themeViewModel: ThemeViewModel = hiltViewModel()
+        val themeMode by themeViewModel.themeMode.collectAsState()
+        ThemeModeSelector(selected = themeMode, onSelect = themeViewModel::setThemeMode)
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         ProfileSectionTitle(title = "Legal & Information")
 
@@ -295,7 +321,7 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
                 showLogoutDialog = false
             },
 
-            containerColor = CardColor,
+            containerColor = AppColors.Surface,
 
             title = {
 
@@ -362,6 +388,53 @@ fun ProfileScreen(resumeViewModel: ResumeViewModel,navController: NavHostControl
     }
 }
 
+/** Segmented control: System / Light / Dark. */
+@Composable
+fun ThemeModeSelector(selected: ThemeMode, onSelect: (ThemeMode) -> Unit) {
+    val options = listOf(
+        Triple(ThemeMode.SYSTEM, "System", Icons.Outlined.PhoneAndroid),
+        Triple(ThemeMode.LIGHT, "Light", Icons.Outlined.LightMode),
+        Triple(ThemeMode.DARK, "Dark", Icons.Outlined.DarkMode)
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(CardColor)
+            .background(CardBrush)
+            .border(1.dp, BorderColor, RoundedCornerShape(18.dp))
+            .padding(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        options.forEach { (mode, label, icon) ->
+            val isSelected = mode == selected
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (isSelected) AppColors.AccentSoft else Color.Transparent)
+                    .clickable { onSelect(mode) }
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    icon, contentDescription = null,
+                    tint = if (isSelected) AppColors.Accent else AppColors.TextSecondary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    label,
+                    color = if (isSelected) AppColors.Accent else AppColors.TextSecondary,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun ProfileSectionTitle(
     title: String
@@ -393,12 +466,14 @@ fun ActionItem(
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
             containerColor = CardColor
-        )
+        ),
+        border = BorderStroke(1.dp, BorderColor)
     ) {
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(CardBrush)
                 .padding(horizontal = 18.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -406,13 +481,13 @@ fun ActionItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.White            )
+                tint = AppColors.TextPrimary            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
                 text = title,
-                color = if (isLogout) Color.White else PrimaryWhite,
+                color = if (isLogout) AppColors.TextPrimary else PrimaryWhite,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )

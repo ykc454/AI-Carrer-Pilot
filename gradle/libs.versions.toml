@@ -24,6 +24,8 @@ foundation = "1.11.2"
 uiText = "1.11.2"
 firebaseFirestoreKtx = "26.3.0"
 work = "2.10.0"
+camerax = "1.4.2"
+mlkitTextRecognition = "16.0.1"
 
 
 [libraries]
@@ -68,6 +70,13 @@ firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-fires
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltNav" }
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltNav" }
+# Camera scan + on-device OCR
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+guava = { group = "com.google.guava", name = "guava", version = "33.3.1-android" } # ListenableFuture for CameraX
+mlkit-text-recognition ={ group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitTextRecognition" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
